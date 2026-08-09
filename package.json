@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check app.js && node --check time-clock/public/app.js && node --check time-clock/public/admin.js"
+    "check": "node --check app.js && node --check time-clock/app.js && node --check time-clock/admin.js"
   },
   "engines": { "node": ">=22" },
   "dependencies": {

@@ -1,12 +1,6 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/inventory", "destination": "/index.html" },
-    { "source": "/time-clock", "destination": "/time-clock/public/index.html" },
-    { "source": "/time-clock/admin", "destination": "/time-clock/public/admin.html" },
-    { "source": "/time-clock/app.js", "destination": "/time-clock/public/app.js" },
-    { "source": "/time-clock/styles.css", "destination": "/time-clock/public/styles.css" },
-    { "source": "/time-clock/admin.js", "destination": "/time-clock/public/admin.js" },
-    { "source": "/time-clock/admin.css", "destination": "/time-clock/public/admin.css" }
+    { "source": "/inventory", "destination": "/index.html" }
   ]
 }
