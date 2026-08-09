@@ -53,6 +53,12 @@ create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete restrict,
   name text not null,
+  base_name text,
+  strength text,
+  strength_unit text,
+  volume numeric,
+  volume_unit text,
+  dosage_form text,
   category text not null,
   unit text not null,
   supplier text,
@@ -345,12 +351,8 @@ for select to authenticated using (id = auth.uid());
 drop policy if exists "admins manage profiles in organization" on public.profiles;
 create policy "admins manage profiles in organization" on public.profiles
 for all to authenticated
-using (
-  exists (select 1 from public.profiles me where me.id = auth.uid() and me.role = 'admin' and me.organization_id = profiles.organization_id)
-)
-with check (
-  exists (select 1 from public.profiles me where me.id = auth.uid() and me.role = 'admin' and me.organization_id = profiles.organization_id)
-);
+using (public.is_org_admin(organization_id))
+with check (public.is_org_admin(organization_id));
 
 drop policy if exists "users view own clinic assignments" on public.profile_clinics;
 create policy "users view own clinic assignments" on public.profile_clinics
