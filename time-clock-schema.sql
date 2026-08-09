@@ -34,6 +34,7 @@ create table if not exists public.time_records (
   gross_pay numeric(12,2),
   status text not null default 'clocked_in' check (status in ('clocked_in','clocked_out')),
   notes text not null default '',
+  employee_note text not null default '',
   pay_period_start date not null,
   pay_period_end date not null,
   pay_date date not null,
