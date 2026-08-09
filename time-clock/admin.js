@@ -1783,6 +1783,10 @@ function renderTimeRecordsTable(
 </td>
 
 <td class="correction-notes-cell">
+  ${record.employeeNote ? escapeHtml(record.employeeNote) : "—"}
+</td>
+
+<td class="correction-notes-cell">
   ${
     record.notes
       ? escapeHtml(record.notes)
@@ -1850,6 +1854,7 @@ function exportSelectedTimeRecords() {
     "Clock Out",
     "Hours",
     "Gross Pay",
+    "Employee Note",
     "Correction Notes"
   ]];
 
@@ -1861,6 +1866,7 @@ function exportSelectedTimeRecords() {
       formatDateTime(record.clockOut),
       record.hoursWorked ?? "",
       record.grossPay ?? "",
+      record.employeeNote || "",
       record.notes || ""
     ]);
   });
@@ -1911,10 +1917,11 @@ function printSelectedTimeRecords() {
           <td>${formatDateTime(record.clockOut)}</td>
           <td>${record.hoursWorked == null ? "—" : formatNumber(record.hoursWorked)}</td>
           <td>${record.grossPay == null ? "—" : formatCurrency(record.grossPay)}</td>
+          <td>${escapeHtml(record.employeeNote || "—")}</td>
           <td>${escapeHtml(record.notes || "—")}</td>
         </tr>
       `).join("")
-    : '<tr><td colspan="7">No time records available.</td></tr>';
+    : '<tr><td colspan="8">No time records available.</td></tr>';
   const printWindow = window.open("", "_blank");
 
   if (!printWindow) {
@@ -1935,7 +1942,7 @@ function printSelectedTimeRecords() {
     </style></head><body>
     <h1>Employee Time Records</h1>
     <p>${escapeHtml(employee.employeeName)} — Employee ID: ${escapeHtml(employee.employeeId)}</p>
-    <table><thead><tr><th>Work Date</th><th>Clinic</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Gross Pay</th><th>Correction Notes</th></tr></thead>
+    <table><thead><tr><th>Work Date</th><th>Clinic</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Gross Pay</th><th>Employee Note</th><th>Correction Notes</th></tr></thead>
     <tbody>${tableRows}</tbody></table></body></html>`);
   printWindow.document.close();
   printWindow.addEventListener("load", () => {
