@@ -1,0 +1,16 @@
+{
+  "name": "montes-moreno-healthcare-suite",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check app.js && node --check time-clock/public/app.js && node --check time-clock/public/admin.js"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "@supabase/supabase-js": "2.56.0",
+    "bcryptjs": "2.4.3",
+    "jsonwebtoken": "9.0.2"
+  }
+}

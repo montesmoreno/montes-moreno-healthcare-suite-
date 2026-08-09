@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <meta
+    name="description"
+    content="Montes Moreno Healthcare Associates Payroll Administration"
+  />
+
+  <title>Montes Moreno Healthcare Associates Administration</title>
+
+  <link rel="stylesheet" href="/time-clock/admin.css" />
+</head>
+
+<body>
+  <div class="page-wrapper">
+
+    <!-- ADMIN LOGIN -->
+    <section id="loginSection" class="login-section">
+      <div class="login-card">
+
+        <div class="brand-header">
+          <div class="brand-icon">MM</div>
+
+          <div>
+            <h1>Montes Moreno Healthcare Associates</h1>
+            <p>Administration</p>
+          </div>
+        </div>
+
+        <form id="adminLoginForm" class="login-form">
+
+          <div class="form-group">
+            <label for="adminUsername">Username</label>
+
+            <input
+              id="adminUsername"
+              name="username"
+              type="text"
+              value="admin"
+              autocomplete="username"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="adminPassword">Password</label>
+
+            <input
+              id="adminPassword"
+              name="password"
+              type="password"
+              placeholder="Enter administrator password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button
+            id="adminLoginButton"
+            class="primary-button"
+            type="submit"
+          >
+            Sign In
+          </button>
+
+          <p
+            id="loginMessage"
+            class="message"
+            aria-live="polite"
+          ></p>
+
+        </form>
+      </div>
+    </section>
+
+    <!-- ADMIN APPLICATION -->
+    <section
+      id="dashboardSection"
+      class="dashboard-section hidden"
+    >
+
+      <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+          <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">MM</div>
+
+            <div>
+              <h2>Montes Moreno Healthcare Associates</h2>
+              <p>Administration</p>
+            </div>
+          </div>
+
+          <nav class="sidebar-navigation">
+
+            <button
+              id="payrollNavButton"
+              class="navigation-button active"
+              type="button"
+            >
+              <span class="navigation-icon">💵</span>
+              <span>Payroll</span>
+            </button>
+
+            <button
+              id="employeesNavButton"
+              class="navigation-button"
+              type="button"
+            >
+              <span class="navigation-icon">👥</span>
+              <span>Employees</span>
+            </button>
+
+          </nav>
+
+          <div class="sidebar-footer">
+            <button
+              id="logoutButton"
+              class="logout-button"
+              type="button"
+            >
+              <span class="navigation-icon">↪</span>
+              <span>Log Out</span>
+            </button>
+          </div>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-content">
+
+          <!-- PAYROLL VIEW -->
+          <section id="payrollView">
+
+            <header class="dashboard-header">
+              <div>
+                <p class="eyebrow">MONTES MORENO HEALTHCARE ASSOCIATES</p>
+                <h1>Payroll Dashboard</h1>
+
+                <p class="subtitle">
+                  Employee hours and estimated gross payroll
+                </p>
+              </div>
+            </header>
+
+            <!-- PAY PERIOD -->
+            <section class="pay-period-card">
+              <div>
+                <p class="card-label">
+                  Biweekly Pay Period
+                </p>
+
+                <h2 id="payPeriodText">
+                  Loading...
+                </h2>
+
+                <p
+                  id="payDateText"
+                  class="muted-text"
+                >
+                  Pay Date: Loading...
+                </p>
+              </div>
+
+              <div class="action-buttons">
+                <button
+                  id="previousPeriodButton"
+                  class="secondary-button"
+                  type="button"
+                >
+                  ← Previous Period
+                </button>
+
+                <button
+                  id="currentPeriodButton"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Current Period
+                </button>
+
+                <button
+                  id="nextPeriodButton"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Next Period →
+                </button>
+
+                <button
+                  id="refreshPayrollButton"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Refresh
+                </button>
+              </div>
+            </section>
+
+            <!-- PAYROLL SUMMARY -->
+            <section class="summary-grid">
+
+              <article class="summary-card">
+                <p class="card-label">
+                  Employees
+                </p>
+
+                <h3 id="totalEmployees">
+                  0
+                </h3>
+              </article>
+
+              <article class="summary-card">
+                <p class="card-label">
+                  Total Hours
+                </p>
+
+                <h3 id="totalHours">
+                  0.00
+                </h3>
+              </article>
+
+              <article class="summary-card">
+                <p class="card-label">
+                  Gross Payroll
+                </p>
+
+                <h3 id="totalGrossPay">
+                  $0.00
+                </h3>
+              </article>
+
+              <article class="summary-card warning-card">
+                <p class="card-label">
+                  Missing Punches
+                </p>
+
+                <h3 id="missingPunchCount">
+                  0
+                </h3>
+              </article>
+
+            </section>
+
+            <!-- PAYROLL TABLE -->
+            <section class="content-card">
+
+              <div class="section-header">
+                <div>
+                  <h2>Payroll Summary</h2>
+
+                  <p class="muted-text">
+                    Lunch is included in paid working hours.
+                  </p>
+                </div>
+
+                <div class="action-buttons">
+                  <button
+                    id="addManualShiftButton"
+                    class="primary-button"
+                    type="button"
+                  >
+                    + Add Manual Shift
+                  </button>
+
+                  <button
+                    id="exportExcelButton"
+                    class="secondary-button"
+                    type="button"
+                  >
+                    Export Excel
+                  </button>
+
+                  <button
+                    id="printPayrollButton"
+                    class="secondary-button"
+                    type="button"
+                  >
+                    Print
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-container">
+                <table class="payroll-table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Employee ID</th>
+                      <th>Hours</th>
+                      <th>Hourly Rate</th>
+                      <th>Gross Pay</th>
+                      <th>Time Records</th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="payrollTableBody">
+                    <tr>
+                      <td
+                        colspan="8"
+                        class="empty-state"
+                      >
+                        Payroll information will appear here.
+                      </td>
+                    </tr>
+                  </tbody>
+
+                  <tfoot>
+                    <tr>
+                      <td colspan="2">
+                        Payroll Total
+                      </td>
+
+                      <td id="footerTotalHours">
+                        0.00
+                      </td>
+
+                      <td></td>
+
+                      <td id="footerTotalGross">
+                        $0.00
+                      </td>
+
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+            </section>
+
+            <!-- MISSING PUNCHES -->
+            <section class="content-card">
+
+              <div class="section-header">
+                <div>
+                  <h2>Missing Punches</h2>
+
+                  <p class="muted-text">
+                    Records without a completed Clock In
+                    or Clock Out.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                id="missingPunchList"
+                class="missing-punch-list"
+              >
+                <p class="empty-state">
+                  No missing punches found.
+                </p>
+              </div>
+
+            </section>
+
+            <p
+              id="dashboardMessage"
+              class="message"
+              aria-live="polite"
+            ></p>
+
+          </section>
+
+          <!-- EMPLOYEES VIEW -->
+          <section
+            id="employeesView"
+            class="hidden"
+          >
+
+           <header class="dashboard-header">
+  <div>
+    <p class="eyebrow">MONTES MORENO HEALTHCARE ASSOCIATES</p>
+    <h1>Employees</h1>
+
+    <p class="subtitle">
+      View active and inactive employee accounts
+    </p>
+  </div>
+
+  <div class="action-buttons">
+    <button
+      id="addEmployeeButton"
+      class="primary-button"
+      type="button"
+    >
+      + Add Employee
+    </button>
+
+    <button
+      id="refreshEmployeesButton"
+      class="secondary-button"
+      type="button"
+    >
+      Refresh
+    </button>
+  </div>
+</header>
+
+            <!-- EMPLOYEE SUMMARY -->
+            <section class="employee-summary-grid">
+
+              <article class="summary-card">
+                <p class="card-label">
+                  Total Employees
+                </p>
+
+                <h3 id="employeesTotalCount">
+                  0
+                </h3>
+              </article>
+
+              <article class="summary-card active-card">
+                <p class="card-label">
+                  Active
+                </p>
+
+                <h3 id="activeEmployeesCount">
+                  0
+                </h3>
+              </article>
+
+              <article class="summary-card inactive-card">
+                <p class="card-label">
+                  Inactive
+                </p>
+
+                <h3 id="inactiveEmployeesCount">
+                  0
+                </h3>
+              </article>
+
+            </section>
+
+            <!-- EMPLOYEES TABLE -->
+            <section class="content-card">
+
+              <div class="section-header">
+                <div>
+                  <h2>Employee Directory</h2>
+
+                  <p class="muted-text">
+                    Employee information stored securely in Supabase.
+                  </p>
+                </div>
+              </div>
+
+              <div class="table-container">
+                <table class="payroll-table employees-table">
+                  <thead>
+                    <tr>
+                      <th>Employee ID</th>
+                      <th>Employee Name</th>
+                      <th>Hourly Rate</th>
+                      <th>Hire Date</th>
+                      <th>Status</th>
+                      <th>Password Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="employeesTableBody">
+                    <tr>
+                      <td
+                        colspan="7"
+                        class="empty-state"
+                      >
+                        Employee information will appear here.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </section>
+
+            <p
+              id="employeesMessage"
+              class="message"
+              aria-live="polite"
+            ></p>
+
+          </section>
+
+          <!-- ADD EMPLOYEE MODAL -->
+<div
+  id="addEmployeeModal"
+  class="modal-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="addEmployeeModalTitle"
+>
+  <div class="modal-card">
+
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">EMPLOYEE MANAGEMENT</p>
+
+        <h2 id="addEmployeeModalTitle">
+          Add Employee
+        </h2>
+
+        <p class="muted-text">
+          Create a new employee account.
+        </p>
+      </div>
+
+      <button
+        id="closeAddEmployeeModalButton"
+        class="modal-close-button"
+        type="button"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+
+    <form id="addEmployeeForm">
+
+      <div class="form-group">
+        <label for="newEmployeeName">
+          Employee Name
+        </label>
+
+        <input
+          id="newEmployeeName"
+          name="name"
+          type="text"
+          placeholder="Full employee name"
+          autocomplete="off"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="newEmployeeId">
+          Employee ID
+        </label>
+
+        <input
+          id="newEmployeeId"
+          name="employeeId"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Example: 2608"
+          autocomplete="off"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="newEmployeeHourlyRate">
+          Hourly Rate
+        </label>
+
+        <input
+          id="newEmployeeHourlyRate"
+          name="hourlyRate"
+          type="number"
+          min="0.01"
+          step="0.01"
+          placeholder="Example: 17.00"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="newEmployeeHireDate">
+          Hire Date
+        </label>
+
+        <input
+          id="newEmployeeHireDate"
+          name="hireDate"
+          type="date"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="newEmployeePassword">
+          Temporary Password
+        </label>
+
+        <input
+          id="newEmployeePassword"
+          name="password"
+          type="password"
+          minlength="8"
+          placeholder="Minimum 8 characters"
+          autocomplete="new-password"
+          required
+        />
+
+        <p class="field-help">
+          The readable password will not be stored.
+          Only its secure hash will be saved.
+        </p>
+      </div>
+
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input
+            id="newEmployeeActive"
+            name="active"
+            type="checkbox"
+            checked
+          />
+
+          <span>
+            Active employee
+          </span>
+        </label>
+
+        <label class="checkbox-label">
+          <input
+            id="newEmployeeMustChangePassword"
+            name="mustChangePassword"
+            type="checkbox"
+            checked
+          />
+
+          <span>
+            Require password change
+          </span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="newEmployeeNotes">
+          Notes
+        </label>
+
+        <textarea
+          id="newEmployeeNotes"
+          name="notes"
+          rows="3"
+          placeholder="Optional administrative notes"
+        ></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          id="cancelAddEmployeeButton"
+          class="secondary-button"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="saveEmployeeButton"
+          class="primary-button"
+          type="submit"
+        >
+          Save Employee
+        </button>
+      </div>
+
+      <p
+        id="addEmployeeMessage"
+        class="message"
+        aria-live="polite"
+      ></p>
+
+    </form>
+
+  </div>
+</div>
+          <!-- RESET PASSWORD MODAL -->
+<div
+  id="resetPasswordModal"
+  class="modal-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="modal-card">
+
+    <div class="modal-header">
+
+      <div>
+
+        <p class="eyebrow">
+          EMPLOYEE SECURITY
+        </p>
+
+        <h2>
+          Reset Password
+        </h2>
+
+        <p
+          id="resetPasswordEmployeeText"
+          class="muted-text"
+        ></p>
+
+      </div>
+
+      <button
+        id="closeResetPasswordModalButton"
+        class="modal-close-button"
+        type="button"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <form
+      id="resetPasswordForm"
+    >
+
+      <input
+        id="resetPasswordPageId"
+        type="hidden"
+      />
+
+      <div class="form-group">
+
+        <label>
+          New Password
+        </label>
+
+        <input
+          id="resetPasswordValue"
+          type="password"
+          minlength="8"
+          required
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label
+          class="checkbox-label"
+        >
+
+          <input
+            id="requirePasswordChange"
+            type="checkbox"
+            checked
+          />
+
+          <span>
+            Require password change
+          </span>
+
+        </label>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          id="cancelResetPasswordButton"
+          class="secondary-button"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="saveResetPasswordButton"
+          class="primary-button"
+          type="submit"
+        >
+          Save Password
+        </button>
+
+      </div>
+
+      <p
+        id="resetPasswordMessage"
+        class="message"
+      ></p>
+
+    </form>
+
+  </div>
+</div>
+           <!-- TIME RECORDS MODAL -->
+          <div
+            id="timeRecordsModal"
+            class="modal-overlay hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="timeRecordsModalTitle"
+          >
+            <div class="modal-card modal-card-large">
+
+              <div class="modal-header">
+                <div>
+                  <p class="eyebrow">TIME RECORDS</p>
+
+                  <h2 id="timeRecordsModalTitle">
+                    Employee Time Records
+                  </h2>
+
+                  <p
+                    id="timeRecordsEmployeeText"
+                    class="muted-text"
+                  >
+                    Select a record to edit.
+                  </p>
+                </div>
+
+                <button
+                  id="closeTimeRecordsModalButton"
+                  class="modal-close-button"
+                  type="button"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div class="time-records-actions">
+                <button
+                  id="exportTimeRecordsButton"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Export CSV
+                </button>
+
+                <button
+                  id="printTimeRecordsButton"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Print
+                </button>
+              </div>
+
+              <div class="table-container">
+                <table class="payroll-table time-records-table">
+                  <thead>
+                    <tr>
+  <th>Work Date</th>
+  <th>Clinic</th>
+  <th>Clock In</th>
+  <th>Clock Out</th>
+  <th>Hours</th>
+  <th>Gross Pay</th>
+  <th>Correction Notes</th>
+  <th>Action</th>
+</tr>
+                  </thead>
+
+                  <tbody id="timeRecordsTableBody">
+                    <tr>
+                      <td
+                        colspan="7"
+                        class="empty-state"
+                      >
+                        No time records available.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p
+                id="timeRecordsMessage"
+                class="message"
+                aria-live="polite"
+              ></p>
+
+            </div>
+          </div>
+
+          <!-- ADD MANUAL SHIFT MODAL -->
+          <div
+            id="addManualShiftModal"
+            class="modal-overlay hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="addManualShiftModalTitle"
+          >
+            <div class="modal-card">
+              <div class="modal-header">
+                <div>
+                  <p class="eyebrow">ADMIN ENTRY</p>
+                  <h2 id="addManualShiftModalTitle">Add Manual Shift</h2>
+                  <p id="manualShiftPeriodText" class="muted-text"></p>
+                </div>
+                <button id="closeAddManualShiftModalButton" class="modal-close-button" type="button" aria-label="Close">×</button>
+              </div>
+              <form id="addManualShiftForm">
+                <div class="form-group">
+                  <label for="manualShiftEmployee">Employee</label>
+                  <select id="manualShiftEmployee" required></select>
+                </div>
+                <div class="form-group">
+                  <label for="manualShiftClinic">Clinic</label>
+                  <select id="manualShiftClinic" required>
+                    <option value="Goliad">Goliad</option><option value="San Pedro">San Pedro</option><option value="West Texas">West Texas</option><option value="Odessa">Odessa</option><option value="Rundberg">Rundberg</option><option value="Walzem">Walzem</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="manualShiftDate">Work Date</label>
+                  <input id="manualShiftDate" type="date" required />
+                </div>
+                <div class="form-group">
+                  <label for="manualShiftClockIn">Clock In</label>
+                  <input id="manualShiftClockIn" type="time" required />
+                </div>
+                <div class="form-group">
+                  <label for="manualShiftClockOut">Clock Out</label>
+                  <input id="manualShiftClockOut" type="time" required />
+                </div>
+                <div class="form-group">
+                  <label for="manualShiftNotes">Reason / Notes</label>
+                  <textarea id="manualShiftNotes" rows="3" required placeholder="Example: Pre-Time Clock / Manual Entry"></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button id="cancelAddManualShiftButton" class="secondary-button" type="button">Cancel</button>
+                  <button id="saveManualShiftButton" class="primary-button" type="submit">Save Manual Shift</button>
+                </div>
+                <p id="addManualShiftMessage" class="message" aria-live="polite"></p>
+              </form>
+            </div>
+          </div>
+
+          <!-- EDIT TIME RECORD MODAL -->
+          <div
+            id="editTimeRecordModal"
+            class="modal-overlay hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="editTimeRecordModalTitle"
+          >
+            <div class="modal-card">
+
+              <div class="modal-header">
+                <div>
+                  <p class="eyebrow">CORRECT HOURS</p>
+
+                  <h2 id="editTimeRecordModalTitle">
+                    Edit Time Record
+                  </h2>
+
+                  <p
+                    id="editTimeRecordEmployeeText"
+                    class="muted-text"
+                  ></p>
+                </div>
+
+                <button
+                  id="closeEditTimeRecordModalButton"
+                  class="modal-close-button"
+                  type="button"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form id="editTimeRecordForm">
+
+                <input
+                  id="editTimeRecordPageId"
+                  type="hidden"
+                />
+
+                <div class="form-group">
+                  <label for="editWorkClinic">Clinic</label>
+                  <select id="editWorkClinic" required>
+                    <option value="">Unassigned</option>
+                    <option value="Goliad">Goliad</option><option value="San Pedro">San Pedro</option><option value="West Texas">West Texas</option><option value="Odessa">Odessa</option><option value="Rundberg">Rundberg</option><option value="Walzem">Walzem</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="editClockIn">
+                    Clock In
+                  </label>
+
+                  <input
+                    id="editClockIn"
+                    type="datetime-local"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="editClockOut">
+                    Clock Out
+                  </label>
+
+                  <input
+                    id="editClockOut"
+                    type="datetime-local"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="editTimeRecordNotes">
+                    Correction Reason / Notes
+                  </label>
+
+                  <textarea
+                    id="editTimeRecordNotes"
+                    rows="4"
+                    placeholder="Example: Employee forgot to clock out."
+                  ></textarea>
+                </div>
+
+                <div class="modal-actions">
+                  <button
+                    id="cancelEditTimeRecordButton"
+                    class="secondary-button"
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    id="saveTimeRecordButton"
+                    class="primary-button"
+                    type="submit"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+
+                <p
+                  id="editTimeRecordMessage"
+                  class="message"
+                  aria-live="polite"
+                ></p>
+
+              </form>
+
+            </div>
+          </div>
+
+        </main>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <script src="/time-clock/admin.js"></script>
+</body>
+</html>

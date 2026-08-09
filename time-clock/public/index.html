@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Montes Moreno Healthcare Associates Employee Time Clock</title>
+  <link rel="stylesheet" href="/time-clock/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="loginView" class="card login-card">
+      <div class="logo">MM</div>
+      <h1>Montes Moreno Healthcare Associates</h1>
+      <p class="subtitle">Employee Time Clock</p>
+
+      <form id="loginForm">
+        <label>Employee ID
+          <input id="employeeId" autocomplete="username" required>
+        </label>
+        <label>Password
+          <input id="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Sign In</button>
+        <p id="loginMessage" class="message"></p>
+      </form>
+      <p><a href="/inventory">Inventory Administration</a> · <a href="/time-clock/admin">Payroll Administration</a></p>
+    </section>
+
+    <section id="dashboardView" class="dashboard hidden">
+      <header class="card topbar">
+        <div>
+          <p class="eyebrow">Employee Portal</p>
+          <h2 id="welcomeName">Welcome</h2>
+        </div>
+        <button id="logoutButton" class="secondary">Sign Out</button>
+      </header>
+
+      <section class="card clock-card">
+        <p id="currentDate" class="date"></p>
+        <div id="currentTime" class="time"></div>
+        <span id="statusBadge" class="badge out">Clocked Out</span>
+        <p id="lastAction" class="muted">No activity recorded today.</p>
+      </section>
+
+      <section
+  id="clinicSelection"
+  class="card clinic-selection"
+>
+  <p class="eyebrow">
+    Work Location
+  </p>
+
+  <h3>
+    Where are you working today?
+  </h3>
+
+  <div class="clinic-options">
+    <label class="clinic-option"><input type="radio" name="workClinic" value="Goliad" /><span>Goliad</span></label>
+    <label class="clinic-option"><input type="radio" name="workClinic" value="San Pedro" /><span>San Pedro</span></label>
+    <label class="clinic-option"><input type="radio" name="workClinic" value="West Texas" /><span>West Texas</span></label>
+    <label class="clinic-option"><input type="radio" name="workClinic" value="Odessa" /><span>Odessa</span></label>
+    <label class="clinic-option"><input type="radio" name="workClinic" value="Rundberg" /><span>Rundberg</span></label>
+    <label class="clinic-option"><input type="radio" name="workClinic" value="Walzem" /><span>Walzem</span></label>
+  </div>
+</section>
+
+<div class="actions">
+  <button
+    id="clockInButton"
+    class="clock-in"
+  >
+    Clock In
+  </button>
+
+  <button
+    id="clockOutButton"
+    class="clock-out"
+    disabled
+  >
+    Clock Out
+  </button>
+</div>
+      <p id="actionMessage" class="message"></p>
+
+      <section class="summary">
+        <article class="card"><span>Clock In</span><strong id="summaryIn">—</strong></article>
+        <article class="card"><span>Clock Out</span><strong id="summaryOut">—</strong></article>
+        <article class="card"><span>Hours Today</span><strong id="summaryHours">0.00</strong></article>
+      </section>
+
+      <section class="card records">
+        <p class="eyebrow">Current Pay Period</p>
+        <h3 id="employeePayPeriod">—</h3>
+        <p id="employeePayDate" class="muted">Payday: —</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Clinic</th><th>Clock In</th><th>Clock Out</th><th>Hours</th></tr></thead>
+            <tbody id="recordsBody"><tr><td colspan="5">No records in this pay period.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="/time-clock/app.js"></script>
+</body>
+</html>

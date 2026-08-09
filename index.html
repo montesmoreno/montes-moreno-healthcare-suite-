@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Montes Moreno Healthcare Associates</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section id="authScreen" class="auth-screen">
+    <form id="loginForm" class="auth-card" autocomplete="off">
+      <div class="brand-mark">HR</div>
+      <h1>Montes Moreno Healthcare Associates</h1>
+      <p>Administración de Montes Moreno Healthcare Associates</p>
+      <label>Correo electrónico<input id="loginEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" required /></label>
+      <label>Contraseña<input id="loginPassword" type="password" autocomplete="new-password" required /></label>
+      <button id="loginButton" type="submit">Iniciar sesión</button>
+      <p id="loginMessage" class="form-message" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <div id="appScreen" hidden>
+    <header class="topbar">
+      <div><h1>Montes Moreno Healthcare Associates</h1><p>Inventario multi-clínica</p></div>
+      <div class="header-actions">
+        <a class="secondary" href="/time-clock">Reloj de empleados</a>
+        <a class="secondary" href="/time-clock/admin">Nómina</a>
+        <label class="clinic-picker">Clínica<select id="clinicSelector"></select></label>
+      <div id="fixedClinicDisplay" class="fixed-clinic-display" hidden><span>Clínica</span><strong id="fixedClinicName">—</strong></div>
+        <span id="userName" class="user-name"></span>
+        <button id="logoutBtn" class="secondary">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <nav class="module-nav" aria-label="Módulos de inventario">
+      <button class="nav-button active" data-view="dashboardView">Dashboard</button>
+      <button class="nav-button manager-admin-only" data-view="catalogView">Productos</button>
+      <button class="nav-button" data-view="receivingView">Recibir mercancía</button>
+      <button class="nav-button" data-view="consumptionView">Registrar salida</button>
+      <button class="nav-button" data-view="inventoryView">Inventario y movimientos</button>
+      <button class="nav-button admin-only" data-view="suppliersView">Proveedores</button>
+      <button id="usersNavButton" class="nav-button admin-only" data-view="usersView">Usuarios</button>
+      <button class="nav-button" data-view="transfersView">Transferencias</button>
+      <button class="nav-button admin-only" data-view="auditView">Auditoría</button>
+    </nav>
+
+    <main class="container">
+      <section id="dashboardView" class="app-view">
+        <section class="stats" id="stats"></section>
+        <section class="panel alerts-panel">
+          <div class="section-title"><h2>Alertas</h2><button id="alertCount" class="badge alert-count-button" type="button"></button></div>
+          <div id="alerts" class="alerts"></div>
+        </section>
+        <section class="panel">
+          <div id="activeFilterBanner" class="filter-banner" hidden><span id="activeFilterText"></span><button id="clearDashboardFilter" type="button">Limpiar filtro</button></div>
+          <div class="section-title inventory-tools"><h2>Inventario actual</h2><input id="search" placeholder="Buscar producto..." /></div>
+          <div class="table-wrap"><table><thead><tr><th>Clínica</th><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Unidad</th><th>Estado</th></tr></thead><tbody id="inventoryBody"></tbody></table></div>
+        </section>
+      </section>
+
+      <section id="catalogView" class="app-view" hidden>
+        <section class="grid two-columns">
+          <div id="catalogAdminPanel" class="panel admin-only">
+            <h2 id="productFormTitle">Nuevo producto</h2>
+            <p class="helper">Cada producto se crea una sola vez y puede utilizarse en las dos clínicas.</p>
+            <form id="catalogForm" class="form-grid">
+              <input id="catalogProductId" type="hidden" />
+              <label class="full-width">Nombre base<input id="catalogName" required autocomplete="off" placeholder="Ej. Dexamethasone" /><div id="duplicateSuggestions" class="duplicate-suggestions" hidden></div></label>
+              <label>Categoría<select id="catalogCategory" required>
+                <option>Medicamentos</option><option>Laboratorio</option><option>Pruebas</option>
+                <option>Material de enfermería</option><option>Material de cura</option>
+                <option>Vacunas</option><option>Ginecología</option><option>Limpieza</option>
+                <option>Papelería</option><option>Insumos generales</option><option>Otro</option>
+              </select></label>
+              <div id="medicationFields" class="full-width medication-fields" hidden>
+                <label>Concentración<input id="catalogStrength" placeholder="Ej. 10" /></label>
+                <label>Unidad concentración<select id="catalogStrengthUnit">
+                  <option value="">Selecciona</option>
+                  <option value="mg">mg</option>
+                  <option value="mg/mL">mg/mL</option>
+                  <option value="mcg/mL">mcg/mL</option>
+                  <option value="%">%</option>
+                  <option value="units/mL">units/mL</option>
+                  <option value="g">g</option>
+                </select></label>
+                <label>Volumen o contenido<input id="catalogVolume" placeholder="Ej. 1" /></label>
+                <label>Unidad volumen<select id="catalogVolumeUnit">
+                  <option value="">Selecciona</option>
+                  <option value="mL">mL</option>
+                  <option value="L">L</option>
+                  <option value="tablet">tablet</option>
+                  <option value="capsule">capsule</option>
+                  <option value="dose">dose</option>
+                </select></label>
+                <label>Presentación<select id="catalogDosageForm">
+                  <option value="">Selecciona</option>
+                  <option value="Vial">Vial</option>
+                  <option value="Vial multidosis">Vial multidosis</option>
+                  <option value="Ampule">Ampule</option>
+                  <option value="Bottle">Bottle</option>
+                  <option value="Tablet">Tablet</option>
+                  <option value="Capsule">Capsule</option>
+                  <option value="Bag">Bag</option>
+                  <option value="Tube">Tube</option>
+                  <option value="Pen">Pen</option>
+                  <option value="Syringe">Syringe</option>
+                </select></label>
+                <div class="generated-name-preview">
+                  <span>Nombre que guardará el sistema</span>
+                  <strong id="generatedProductName">—</strong>
+                </div>
+              </div>
+              <label>Unidad<select id="catalogUnit" required>
+                <option>Unidad</option><option>Caja</option><option>Frasco</option><option>Vial</option>
+                <option>Bolsa</option><option>mL</option><option>Rollo</option><option>Kit</option><option>Paquete</option>
+              </select></label>
+              <label>Proveedor habitual<select id="catalogSupplier"><option value="">Sin proveedor</option></select></label>
+              <label class="check-label"><input id="catalogRequiresLot" type="checkbox" /> Requiere lote</label>
+              <label class="check-label"><input id="catalogRequiresExpiration" type="checkbox" /> Requiere vencimiento</label>
+              <div class="form-actions full-width">
+                <button id="saveCatalogBtn" type="submit">Guardar producto</button>
+                <button id="cancelCatalogEditBtn" class="secondary" type="button" hidden>Cancelar edición</button>
+              </div>
+              <p id="catalogMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+
+          <div id="assignmentAdminPanel" class="panel manager-admin-only">
+            <h2>Agregar producto al inventario</h2>
+            <p class="helper">Selecciona la clínica y registra la cantidad que existe actualmente.</p>
+            <form id="assignmentForm" class="form-grid">
+              <label class="full-width">Producto<select id="assignmentProduct" required><option value="">Selecciona un producto</option></select></label>
+              <label>Clínica<select id="assignmentClinic" required></select></label>
+              <label><span id="assignmentQuantityLabel">Cantidad actual</span><input id="assignmentQuantity" type="number" min="0" step="0.01" required /></label>
+              <label><span id="assignmentMinimumLabel">Nivel mínimo</span><input id="assignmentMinimum" type="number" min="0" step="0.01" required /></label>
+              <label id="assignmentLotLabel">Lote<input id="assignmentLot" /></label>
+              <label id="assignmentExpirationLabel">Vencimiento<input id="assignmentExpiration" type="date" /></label>
+              <button id="saveAssignmentBtn" type="submit">Guardar en inventario</button>
+              <p id="assignmentMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title inventory-tools"><h2>Productos</h2><input id="catalogSearch" placeholder="Buscar producto..." /></div>
+          <div class="table-wrap"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Unidad</th><th>Lote</th><th>Vencimiento</th><th>Proveedor</th><th>Estado</th><th id="catalogActionsHeader">Acciones</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
+        </section>
+      </section>
+
+
+      <section id="receivingView" class="app-view" hidden>
+        <section class="grid two-columns receiving-grid">
+          <div class="panel">
+            <h2>Recibir mercancía</h2>
+            <p class="helper">Selecciona un producto existente. No se crean productos desde esta pantalla.</p>
+
+            <form id="receivingForm" class="form-grid">
+              <label>Clínica<select id="receivingClinic" required></select></label>
+              <label>Proveedor<select id="receivingSupplier" required></select></label>
+              <div class="full-width supplier-portal-row">
+                <a id="receivingSupplierPortal" class="secondary supplier-portal-link" href="#" target="_blank" rel="noopener noreferrer" hidden>
+                  Abrir portal del proveedor
+                </a>
+              </div>
+              <label class="full-width">Producto<select id="receivingProduct" required></select></label>
+
+              <div class="full-width product-readonly-card">
+                <div><span>Categoría</span><strong id="receivingCategory">—</strong></div>
+                <div><span>Unidad</span><strong id="receivingUnit">—</strong></div>
+                <div><span>Proveedor habitual</span><strong id="receivingPreferredSupplier">—</strong></div>
+              </div>
+
+              <label><span id="receivingQuantityLabel">Cantidad recibida</span><input id="receivingQuantity" type="number" min="0.01" step="0.01" required /></label>
+              <div id="receivingConversionHint" class="full-width receiving-conversion-hint" hidden></div>
+              <label>Factura <span class="optional">(opcional)</span><input id="receivingInvoice" /></label>
+              <label id="receivingLotLabel">Lote<input id="receivingLot" /></label>
+              <label id="receivingExpirationLabel">Vencimiento<input id="receivingExpiration" type="date" /></label>
+              <label class="full-width">Observaciones <span class="optional">(opcional)</span><input id="receivingNotes" /></label>
+
+              <button id="saveReceivingBtn" type="submit">Registrar recepción</button>
+              <p id="receivingMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+
+          <aside class="panel">
+            <h2>Resumen</h2>
+            <p class="helper">Verifica la recepción antes y después de guardarla.</p>
+            <div class="receiving-summary">
+              <span>Clínica</span><strong id="receivingSummaryClinic">—</strong>
+              <span>Producto</span><strong id="receivingSummaryProduct">—</strong>
+              <span>Stock actual</span><strong id="receivingSummaryCurrent">—</strong>
+              <span>Cantidad a recibir</span><strong id="receivingSummaryIncoming">—</strong>
+              <span>Stock después</span><strong id="receivingSummaryAfter">—</strong>
+            </div>
+            <div id="receivingSuccessCard" class="receiving-success" hidden></div>
+          </aside>
+        </section>
+      </section>
+
+
+      <section id="consumptionView" class="app-view" hidden>
+        <section class="grid two-columns consumption-grid">
+          <div class="panel">
+            <h2>Registrar salida</h2>
+            <p class="helper">Selecciona el producto y la cantidad. El sistema utilizará primero el lote que vence antes.</p>
+            <form id="consumptionForm" class="form-grid">
+              <label id="consumptionClinicField" class="consumption-clinic-field">Clínica<select id="consumptionClinic" required></select></label>
+              <label>Motivo<select id="consumptionReason" required>
+                <option value="Uso en paciente">Uso en paciente</option>
+                <option value="Procedimiento">Procedimiento</option>
+                <option value="Desperdicio">Desperdicio</option>
+                <option value="Producto vencido">Producto vencido</option>
+                <option value="Otro">Otro</option>
+              </select></label>
+              <label class="full-width">Producto<select id="consumptionProduct" required></select></label>
+              <div class="full-width product-readonly-card">
+                <div><span>Unidad</span><strong id="consumptionUnit">—</strong></div>
+                <div><span>Stock disponible</span><strong id="consumptionAvailable">—</strong></div>
+                <div><span>Próximo lote</span><strong id="consumptionNextLot">—</strong><small id="consumptionNextExpiration" class="lot-expiration"></small></div>
+              </div>
+              <label>Cantidad utilizada<input id="consumptionQuantity" type="number" min="0.01" step="0.01" required /></label>
+              <label>Observaciones <span class="optional">(opcional)</span><input id="consumptionNotes" /></label>
+              <button id="saveConsumptionBtn" type="submit">Registrar salida</button>
+              <p id="consumptionMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+          <aside class="panel">
+            <h2>Resumen</h2>
+            <p class="helper">El stock se descontará automáticamente de los lotes más próximos a vencer.</p>
+            <div class="receiving-summary">
+              <span>Clínica</span><strong id="consumptionSummaryClinic">—</strong>
+              <span>Producto</span><strong id="consumptionSummaryProduct">—</strong>
+              <span>Disponible</span><strong id="consumptionSummaryCurrent">—</strong>
+              <span>Cantidad a retirar</span><strong id="consumptionSummaryOutgoing">—</strong>
+              <span>Stock después</span><strong id="consumptionSummaryAfter">—</strong>
+            </div>
+            <div id="consumptionLotsPreview" class="lots-preview" hidden></div>
+            <div id="consumptionSuccessCard" class="receiving-success" hidden></div>
+          </aside>
+        </section>
+      </section>
+
+
+      <section id="transfersView" class="app-view" hidden>
+        <section class="grid two-columns transfer-grid">
+          <div class="panel">
+            <h2>Enviar transferencia</h2>
+            <p class="helper">El producto saldrá de tu clínica y quedará pendiente hasta que la clínica destino lo reciba.</p>
+            <form id="transferForm" class="form-grid">
+              <label>Origen<input id="transferOriginName" readonly /></label>
+              <label>Destino<select id="transferDestination" required></select></label>
+              <label class="full-width">Producto<select id="transferProduct" required></select></label>
+              <label>Lote<select id="transferLot" required></select></label>
+              <label>Cantidad<input id="transferQuantity" type="number" min="0.01" step="0.01" required /></label>
+              <div id="transferLotInfo" class="full-width transfer-lot-info" hidden></div>
+              <label class="full-width">Comentario<input id="transferComment" placeholder="Ej. Caja para Walzem" required /></label>
+              <button id="saveTransferBtn" type="submit">Enviar transferencia</button>
+              <p id="transferMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+
+          <div class="panel">
+            <h2>Transferencias pendientes para recibir</h2>
+            <p class="helper">Los datos no pueden modificarse. Solo confirma la recepción o reporta un problema.</p>
+            <div id="incomingTransfers" class="transfer-list"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Historial de transferencias</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Producto</th>
+                  <th>Origen</th>
+                  <th>Destino</th>
+                  <th>Cantidad</th>
+                  <th>Lote</th>
+                  <th>Estado</th>
+                  <th>Comentario</th>
+                </tr>
+              </thead>
+              <tbody id="transferHistoryBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+
+      <section id="auditView" class="app-view" hidden>
+        <section class="audit-summary-grid">
+          <article class="panel audit-summary-card">
+            <span>Movimientos hoy</span>
+            <strong id="auditTodayCount">0</strong>
+          </article>
+          <article class="panel audit-summary-card">
+            <span>Entradas hoy</span>
+            <strong id="auditTodayEntries">0</strong>
+          </article>
+          <article class="panel audit-summary-card">
+            <span>Salidas hoy</span>
+            <strong id="auditTodayExits">0</strong>
+          </article>
+          <article class="panel audit-summary-card">
+            <span>Transferencias pendientes</span>
+            <strong id="auditPendingTransfers">0</strong>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="section-title inventory-tools">
+            <div>
+              <h2>Auditoría y trazabilidad</h2>
+              <p class="helper">Revisa quién hizo cada entrada, salida, ajuste o transferencia.</p>
+            </div>
+            <button id="clearAuditFilters" type="button" class="secondary">Limpiar filtros</button>
+          </div>
+
+          <div class="audit-filters">
+            <label>Clínica<select id="auditClinic"></select></label>
+            <label>Usuario<select id="auditUser"></select></label>
+            <label>Producto<select id="auditProduct"></select></label>
+            <label>Tipo<select id="auditType">
+              <option value="">Todos</option>
+              <option value="entrada">Entrada</option>
+              <option value="salida">Salida</option>
+              <option value="ajuste">Ajuste</option>
+            </select></label>
+            <label>Desde<input id="auditDateFrom" type="date" /></label>
+            <label>Hasta<input id="auditDateTo" type="date" /></label>
+            <label class="full-width">Buscar<input id="auditSearch" placeholder="Producto, usuario, lote o motivo..." /></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Clínica</th>
+                  <th>Usuario</th>
+                  <th>Producto</th>
+                  <th>Tipo</th>
+                  <th>Cambio</th>
+                  <th>Antes</th>
+                  <th>Después</th>
+                  <th>Lote</th>
+                  <th>Vencimiento</th>
+                  <th>Motivo</th>
+                </tr>
+              </thead>
+              <tbody id="auditBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="inventoryView" class="app-view" hidden>
+
+        <section class="panel inventory-flow-helper" aria-label="Guía rápida de inventario">
+          <div class="flow-helper-title">
+            <h2>¿Qué necesitas hacer?</h2>
+            <p class="helper">Elige según si el producto ya existe o no en esta clínica.</p>
+          </div>
+          <div class="flow-helper-grid">
+            <article class="manager-admin-only">
+              <span class="flow-step">Primera vez</span>
+              <h3>Asignar producto a la clínica</h3>
+              <p>Úsalo solo cuando el producto todavía no existe en el inventario de esa clínica.</p>
+              <button type="button" class="secondary" data-helper-view="catalogView" data-helper-target="assignmentAdminPanel">
+                Ir a Agregar producto al inventario
+              </button>
+            </article>
+            <article>
+              <span class="flow-step">Ya existe</span>
+              <h3>Registrar nuevo lote o más mercancía</h3>
+              <p>Úsalo cuando el producto ya está en la clínica, aunque cambien el lote o el vencimiento.</p>
+              <button type="button" data-helper-view="receivingView">
+                Ir a Recibir mercancía
+              </button>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title inventory-tools">
+            <div>
+              <h2>Inventario por clínica</h2>
+              <p class="helper">Cantidades actuales separadas entre Goliad, San Pedro, West Texas, Odessa, Rundberg y Walzem.</p>
+            </div>
+            <input id="clinicInventorySearch" placeholder="Buscar producto..." />
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Clínica</th><th>Código</th><th>Producto</th><th>Cantidad actual</th><th>Mínimo</th><th>Unidad</th><th>Estado</th></tr></thead>
+            <tbody id="clinicInventoryBody"></tbody>
+          </table></div>
+        </section>
+        <section class="grid two-columns movement-grid">
+          <div class="panel">
+            <h2>Movimiento de inventario</h2>
+            <p class="helper">Entrada, salida o ajuste por conteo físico.</p>
+            <form id="movementForm" class="form-grid movement-form">
+              <label class="full-width">Producto<select id="movementProduct" required></select></label>
+              <label>Lote<select id="movementLot" required></select></label>
+              <label>Tipo<select id="movementType" required>
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+                <option value="ajuste">Ajuste</option>
+              </select></label>
+              <label id="movementQuantityLabel">Cantidad<input id="movementQuantity" type="number" min="0.01" step="0.01" required /></label>
+              <div id="adjustmentPreview" class="adjustment-preview full-width" hidden>
+                <div><span>Stock actual</span><strong id="adjustmentCurrent">—</strong></div>
+                <div><span>Conteo físico</span><strong id="adjustmentCounted">—</strong></div>
+                <div><span>Diferencia</span><strong id="adjustmentDifference">—</strong></div>
+                <div><span>Stock final</span><strong id="adjustmentFinal">—</strong></div>
+                <p id="adjustmentExplanation"></p>
+              </div>
+              <label class="full-width">Motivo<input id="movementReason" placeholder="Compra McKesson, uso en consulta, conteo físico..." required /></label>
+              <button id="saveMovementBtn" type="submit">Guardar</button>
+              <p id="movementMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+          <aside class="panel current-stock-card">
+            <h2>Stock seleccionado</h2>
+            <p class="helper">Revisa la cantidad antes de guardar.</p>
+            <div class="stock-preview">
+              <span>Producto</span><strong id="previewProduct">—</strong>
+              <span>Clínica</span><strong id="previewClinic">—</strong>
+              <span>Cantidad actual</span><strong id="previewQuantity">—</strong>
+              <span>Stock mínimo</span><strong id="previewMinimum">—</strong>
+              <span>Estado</span><strong id="previewStatus">—</strong>
+            </div>
+          </aside>
+        </section>
+        <section class="panel">
+          <h2>Historial de movimientos</h2>
+          <div class="table-wrap"><table><thead><tr><th>Clínica</th><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cambio</th><th>Antes</th><th>Después</th><th>Motivo</th></tr></thead><tbody id="movementBody"></tbody></table></div>
+        </section>
+      </section>
+
+
+      <section id="suppliersView" class="app-view" hidden>
+        <section class="grid two-columns">
+          <div id="supplierAdminPanel" class="panel admin-only">
+            <h2>Nuevo proveedor</h2>
+            <p class="helper">Los proveedores pertenecen a la organización y pueden usarse en ambas clínicas.</p>
+            <form id="supplierForm" class="form-grid">
+              <input id="supplierId" type="hidden" />
+              <label>Nombre<input id="supplierName" required /></label>
+              <label>Categoría<select id="supplierType" required>
+                <option>Medical and pharmaceutical supplies</option>
+                <option>IV therapy and compounded products</option>
+                <option>Laboratory</option>
+                <option>Office supplies</option>
+                <option>Cleaning supplies</option>
+                <option>General</option>
+              </select></label>
+              <label>Contacto<input id="supplierContact" /></label>
+              <label>Teléfono<input id="supplierPhone" type="tel" /></label>
+              <label>Email<input id="supplierEmail" type="email" /></label>
+              <label class="full-width">Sitio web<input id="supplierWebsite" type="text" inputmode="url" placeholder="https://proveedor.com" /></label>
+              <div class="form-actions full-width">
+                <button id="saveSupplierBtn" type="submit">Guardar proveedor</button>
+                <button id="cancelSupplierEditBtn" class="secondary" type="button" hidden>Cancelar edición</button>
+              </div>
+              <p id="supplierMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+          <div class="panel supplier-summary">
+            <h2>Proveedores principales</h2>
+            <p class="helper">Base operativa definida para Montes Moreno Healthcare Associates.</p>
+            <div id="preferredSuppliers" class="supplier-cards"></div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="section-title inventory-tools"><h2>Directorio de proveedores</h2><input id="supplierSearch" placeholder="Buscar proveedor..." /></div>
+          <div class="table-wrap"><table><thead><tr><th>Proveedor</th><th>Categoría</th><th>Contacto</th><th>Teléfono</th><th>Email</th><th>Sitio web</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="supplierBody"></tbody></table></div>
+        </section>
+      </section>
+
+      <section id="usersView" class="app-view" hidden>
+        <section class="grid two-columns">
+          <div class="panel">
+            <h2>Nuevo usuario</h2>
+            <p class="helper">Solo el administrador puede crear accesos. La contraseña temporal no se guarda en nuestras tablas.</p>
+            <form id="userForm" class="form-grid">
+              <label>Nombre completo<input id="newUserName" required /></label>
+              <label>Email<input id="newUserEmail" type="email" required /></label>
+              <label>Rol<select id="newUserRole" required>
+                <option value="staff">Staff</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select></label>
+              <label>Contraseña temporal<input id="newUserPassword" type="password" minlength="10" required /></label>
+              <fieldset class="full-width clinic-access-fieldset">
+                <legend>Acceso a clínicas</legend>
+                <div id="newUserClinics" class="clinic-checkboxes"></div>
+              </fieldset>
+              <button id="createUserBtn" type="submit">Crear usuario</button>
+              <p id="userMessage" class="form-message full-width"></p>
+            </form>
+          </div>
+
+          <div class="panel">
+            <h2>Reglas de acceso</h2>
+            <div class="role-summary">
+              <p><strong>Admin:</strong> usuarios, catálogo, proveedores, inventario y ajustes.</p>
+              <p><strong>Manager:</strong> inventario, entradas, salidas y ajustes de sus clínicas.</p>
+              <p><strong>Staff:</strong> consultar inventario y registrar entradas/salidas. No crea productos.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title inventory-tools">
+            <h2>Usuarios</h2>
+            <input id="userSearch" placeholder="Buscar usuario..." />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Clínicas</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="usersBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+    </main>
+  </div>
+
+
+  <dialog id="lotDetailsDialog" class="lot-details-dialog">
+    <div class="lot-details-header">
+      <div>
+        <h2 id="lotDetailsTitle">Detalle de lotes</h2>
+        <p id="lotDetailsSubtitle" class="helper"></p>
+      </div>
+      <button id="closeLotDetailsBtn" type="button" class="secondary small" aria-label="Cerrar detalle de lotes">Cerrar</button>
+    </div>
+    <div id="lotDetailsBody"></div>
+  </dialog>
+
+
+  <dialog id="editUserDialog" class="user-edit-dialog">
+    <form id="editUserForm">
+      <div class="user-edit-header">
+        <div>
+          <h2>Editar permisos</h2>
+          <p id="editUserEmail" class="helper"></p>
+        </div>
+        <button id="cancelEditUserBtn" type="button" class="secondary small">Cerrar</button>
+      </div>
+
+      <div class="user-edit-body form-grid">
+        <input id="editUserId" type="hidden" />
+
+        <label>Nombre completo
+          <input id="editUserName" required />
+        </label>
+
+        <label>Rol
+          <select id="editUserRole" required>
+            <option value="staff">Staff</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+
+        <fieldset class="full-width clinic-access-fieldset">
+          <legend>Acceso a clínicas</legend>
+          <div id="editUserClinics" class="clinic-checkboxes"></div>
+        </fieldset>
+
+        <div id="editUserWarning" class="full-width user-edit-warning" hidden></div>
+        <p id="editUserMessage" class="form-message full-width"></p>
+      </div>
+
+      <div class="user-edit-actions">
+        <button id="saveEditUserBtn" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
