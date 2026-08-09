@@ -4,12 +4,14 @@
 .login-card{max-width:430px;margin:7vh auto;padding:34px;text-align:center}.logo{width:74px;height:74px;margin:0 auto 15px;border-radius:50%;display:grid;place-items:center;background:#176b87;color:#fff;font-size:27px;font-weight:700}
 h1,h2,h3{margin-top:0}.subtitle,.muted{color:#667985}label{display:block;text-align:left;font-weight:700;font-size:14px;margin:18px 0}
 input{width:100%;margin-top:8px;padding:14px;border:1px solid #ccd8de;border-radius:9px;font-size:16px}
+textarea{width:100%;margin-top:8px;padding:14px;border:1px solid #ccd8de;border-radius:9px;font:inherit;resize:vertical}
 button{border:0;border-radius:10px;padding:14px 18px;font-weight:700;font-size:16px;cursor:pointer;background:#176b87;color:#fff}
 button:disabled{opacity:.5;cursor:not-allowed}.login-card button{width:100%}.hidden{display:none!important}.dashboard{max-width:900px;margin:auto}
 .topbar{display:flex;justify-content:space-between;align-items:center;padding:22px 25px}.eyebrow{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#718792;margin:0 0 5px}
 .secondary{background:#fff;color:#183b4e;border:1px solid #cbd8de}.clock-card{text-align:center;padding:34px 20px;margin-top:20px}.date{color:#667985}.time{font-size:48px;font-weight:700;margin:8px 0 20px}
 .badge{display:inline-block;padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px}.badge.in{background:#dcfae6;color:#067647}.badge.out{background:#f2f4f7;color:#475467}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}.actions button{min-height:62px;font-size:18px}.clock-in{background:#067647}.clock-out{background:#b42318}
+.employee-note-card{margin-top:20px;padding:22px}.employee-note-card label{margin:0}.employee-note-card label span,.employee-note-card small{color:#667985;font-weight:400}.employee-note-card small{display:block;margin-top:8px}.employee-note-card textarea:disabled{background:#f2f4f7;color:#667985}
 .message{text-align:center;min-height:22px}.message.error{color:#b42318}.message.success{color:#067647}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px}.summary article{text-align:center;padding:22px}.summary span{display:block;color:#718792;font-size:13px;margin-bottom:8px}.summary strong{font-size:20px}
 .records{margin-top:20px;padding:24px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:13px 10px;border-bottom:1px solid #e8eef1;text-align:left;white-space:nowrap}
