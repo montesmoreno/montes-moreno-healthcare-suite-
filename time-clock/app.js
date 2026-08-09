@@ -25,6 +25,9 @@ function formatDate(value) {
   if (!value) return "—";
   return new Date(`${value}T12:00:00`).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
 }
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+}
 
 function tick() {
   const now = new Date();
@@ -64,6 +67,8 @@ function render() {
     $("summaryHours").textContent = Number(r.hoursWorked || 0).toFixed(2);
     $("lastAction").textContent = `Clocked out at ${formatTime(r.clockOut)}`;
   }
+  $("employeeNote").disabled = Boolean(r?.clockOut);
+  if (r?.clockOut) $("employeeNote").value = "";
 
   if (state.period) {
     $("employeePayPeriod").textContent =
@@ -73,8 +78,8 @@ function render() {
   }
 
   $("recordsBody").innerHTML = state.records.length
-    ? state.records.map(r => `<tr><td>${formatDate(r.workDate)}</td><td>${r.workClinic || "Unassigned"}</td><td>${formatTime(r.clockIn)}</td><td>${formatTime(r.clockOut)}</td><td>${r.hoursWorked == null ? "In progress" : Number(r.hoursWorked).toFixed(2)}</td></tr>`).join("")
-    : '<tr><td colspan="5">No records in this pay period.</td></tr>';
+    ? state.records.map(r => `<tr><td>${formatDate(r.workDate)}</td><td>${escapeHtml(r.workClinic || "Unassigned")}</td><td>${formatTime(r.clockIn)}</td><td>${formatTime(r.clockOut)}</td><td>${r.hoursWorked == null ? "In progress" : Number(r.hoursWorked).toFixed(2)}</td><td>${escapeHtml(r.employeeNote || "—")}</td></tr>`).join("")
+    : '<tr><td colspan="6">No records in this pay period.</td></tr>';
 }
 
 async function loadDashboard() {
@@ -137,12 +142,14 @@ $("clockInButton").addEventListener("click", async () => {
 
         body: JSON.stringify({
           workClinic:
-            selectedClinic.value
+            selectedClinic.value,
+          employeeNote: $("employeeNote").value.trim()
         })
       }
     );
 
     await loadDashboard();
+    $("employeeNote").value = "";
 
     message(
       $("actionMessage"),
@@ -165,8 +172,9 @@ $("clockInButton").addEventListener("click", async () => {
 $("clockOutButton").addEventListener("click", async () => {
   message($("actionMessage"), "Recording clock-out...");
   try {
-    await api("/api/clock-out", { method:"POST", headers:authHeaders() });
+    await api("/api/clock-out", { method:"POST", headers:authHeaders(), body:JSON.stringify({ employeeNote: $("employeeNote").value.trim() }) });
     await loadDashboard();
+    $("employeeNote").value = "";
     message($("actionMessage"), "Clock-out recorded.", "success");
   } catch (error) { message($("actionMessage"), error.message, "error"); }
 });
