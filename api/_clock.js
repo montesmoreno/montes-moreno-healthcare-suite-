@@ -65,7 +65,7 @@ export function mapRecord(row) {
     workDate: row.work_date, clockIn: row.clock_in, clockOut: row.clock_out,
     hoursWorked: row.hours_worked == null ? null : Number(row.hours_worked),
     hourlyRate: Number(row.hourly_rate_snapshot || 0), grossPay: row.gross_pay == null ? null : Number(row.gross_pay),
-    status: row.status, notes: row.notes || "", payPeriodStart: row.pay_period_start,
+    status: row.status, notes: row.notes || "", employeeNote: row.employee_note || "", payPeriodStart: row.pay_period_start,
     payPeriodEnd: row.pay_period_end, payDate: row.pay_date, workClinic: row.clinic?.name || ""
   };
 }
