@@ -40,3 +40,7 @@ Nunca subas la service-role key, la contraseña administrativa ni `JWT_SECRET` a
 - `time-clock-schema.sql` contiene las tablas integradas de empleados y tiempo.
 
 Las dos aplicaciones usan el mismo proyecto Supabase y se publican juntas en un solo proyecto Vercel, compatible con el plan gratuito.
+
+## Deployment
+
+Production is deployed automatically by Vercel from the `main` branch.
