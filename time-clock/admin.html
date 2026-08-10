@@ -119,6 +119,7 @@
               <span class="navigation-icon">👥</span>
               <span>Employees</span>
             </button>
+            <button id="locationsNavButton" class="navigation-button" type="button"><span class="navigation-icon">📍</span><span>Locations</span></button>
 
           </nav>
 
@@ -1045,6 +1046,11 @@
             </div>
           </div>
 
+          <section id="locationsView" class="hidden">
+            <header class="dashboard-header"><div><p class="eyebrow">LOCATION MANAGEMENT</p><h1>Locations</h1><p>Add clinics used by Inventory and Employee Time Clock.</p></div></header>
+            <div class="dashboard-card"><form id="locationForm"><div class="form-group"><label for="locationName">Location Name</label><input id="locationName" required maxlength="100" placeholder="Example: Austin North" /></div><div class="form-group"><label for="locationCode">Short Code (optional)</label><input id="locationCode" maxlength="30" placeholder="Example: AUS-N" /></div><button id="saveLocationButton" class="primary-button" type="submit">Add Location</button><p id="locationAdminMessage" class="message"></p></form></div>
+            <div class="dashboard-card"><h2>Active Locations</h2><div id="locationsList"></div></div>
+          </section>
         </main>
 
       </div>

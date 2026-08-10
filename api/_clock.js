@@ -26,11 +26,16 @@ export function signEmployee(employee) {
 }
 
 export function requireRole(req, role) {
+  const claims = requireUser(req);
+  if (claims.role !== role) throw new Error("UNAUTHORIZED");
+  return claims;
+}
+export function requireUser(req) {
   const value = String(req.headers.authorization || "");
   if (!value.startsWith("Bearer ")) throw new Error("UNAUTHORIZED");
   try {
     const claims = jwt.verify(value.slice(7), secret());
-    if (claims.role !== role) throw new Error();
+    if (!["admin","employee"].includes(claims.role)) throw new Error();
     return claims;
   } catch { throw new Error("UNAUTHORIZED"); }
 }
@@ -77,7 +82,7 @@ export async function employeeById(employeeId) {
 }
 
 export async function clinicByName(name, organizationId) {
-  if (!CLINICS.includes(name)) return null;
+  if (!String(name || "").trim()) return null;
   const { data, error } = await db().from("clinics").select("id,organization_id,name").eq("organization_id", organizationId).eq("name", name).eq("active", true).maybeSingle();
   if (error) throw error;
   return data;

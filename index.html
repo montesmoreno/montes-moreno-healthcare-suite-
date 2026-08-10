@@ -25,6 +25,7 @@
       <div class="header-actions">
         <a class="secondary" href="/time-clock">Reloj de empleados</a>
         <a class="secondary" href="/time-clock/admin">Nómina</a>
+        <button id="addLocationBtn" class="secondary admin-only" type="button">Añadir ubicación</button>
         <label class="clinic-picker">Clínica<select id="clinicSelector"></select></label>
       <div id="fixedClinicDisplay" class="fixed-clinic-display" hidden><span>Clínica</span><strong id="fixedClinicName">—</strong></div>
         <span id="userName" class="user-name"></span>
@@ -581,6 +582,16 @@
       <div class="user-edit-actions">
         <button id="saveEditUserBtn" type="submit">Guardar cambios</button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="addLocationDialog">
+    <form id="addLocationForm" class="dialog-card form-grid">
+      <h2 class="full-width">Añadir ubicación</h2>
+      <label class="full-width">Nombre de la clínica<input id="newLocationName" required maxlength="100" placeholder="Ej. Austin North" /></label>
+      <label class="full-width">Código corto <span class="optional">(opcional)</span><input id="newLocationCode" maxlength="30" placeholder="Ej. AUS-N" /></label>
+      <div class="form-actions full-width"><button type="submit">Guardar ubicación</button><button id="cancelLocationBtn" class="secondary" type="button">Cancelar</button></div>
+      <p id="locationMessage" class="form-message full-width"></p>
     </form>
   </dialog>
 

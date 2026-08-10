@@ -553,6 +553,18 @@
     renderAll();
   }
 
+  async function addLocation(event) {
+    event.preventDefault();
+    setMessage($("locationMessage"));
+    const name = $("newLocationName").value.trim();
+    const { error } = await sb.rpc("add_clinic", { p_name: name, p_code: $("newLocationCode").value.trim() || name });
+    if (error) return setMessage($("locationMessage"), error.message, "error");
+    $("addLocationDialog").close();
+    $("addLocationForm").reset();
+    await loadIdentity();
+    await loadData();
+  }
+
   function renderAll() {
     renderDashboard();
     renderCatalog();
@@ -2376,6 +2388,9 @@ $('receivingClinic').value = activeClinicId();
 
   $('loginForm').addEventListener('submit', signIn);
   $('logoutBtn').addEventListener('click', signOut);
+  $('addLocationBtn').addEventListener('click', () => $('addLocationDialog').showModal());
+  $('cancelLocationBtn').addEventListener('click', () => $('addLocationDialog').close());
+  $('addLocationForm').addEventListener('submit', addLocation);
   $('clinicSelector').addEventListener('change', async (e) => { state.selectedClinic = e.target.value; await loadData(); });
   $('search').addEventListener('input', renderDashboard);
 

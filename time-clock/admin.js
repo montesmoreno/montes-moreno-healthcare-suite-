@@ -22,12 +22,20 @@ const payrollView =
 
 const employeesView =
   document.getElementById("employeesView");
+const locationsView = document.getElementById("locationsView");
 
 const payrollNavButton =
   document.getElementById("payrollNavButton");
 
 const employeesNavButton =
   document.getElementById("employeesNavButton");
+const locationsNavButton = document.getElementById("locationsNavButton");
+const locationForm = document.getElementById("locationForm");
+const locationName = document.getElementById("locationName");
+const locationCode = document.getElementById("locationCode");
+const locationsList = document.getElementById("locationsList");
+const locationAdminMessage = document.getElementById("locationAdminMessage");
+let currentLocations = [];
 
 const loginForm =
   document.getElementById("adminLoginForm");
@@ -358,6 +366,7 @@ function showPayrollView() {
   employeesView.classList.add(
     "hidden"
   );
+  locationsView.classList.add("hidden");
 
   payrollNavButton.classList.add(
     "active"
@@ -366,6 +375,7 @@ function showPayrollView() {
   employeesNavButton.classList.remove(
     "active"
   );
+  locationsNavButton.classList.remove("active");
 }
 
 function showEmployeesView() {
@@ -376,6 +386,7 @@ function showEmployeesView() {
   employeesView.classList.remove(
     "hidden"
   );
+  locationsView.classList.add("hidden");
 
   payrollNavButton.classList.remove(
     "active"
@@ -384,7 +395,12 @@ function showEmployeesView() {
   employeesNavButton.classList.add(
     "active"
   );
+  locationsNavButton.classList.remove("active");
 }
+
+async function locationRequest(options={}) { const response=await fetch("/api/locations",{...options,headers:{"Content-Type":"application/json",Authorization:`Bearer ${getToken()}`,...options.headers}});const data=await response.json();if(response.status===401)throw new Error("UNAUTHORIZED");if(!response.ok)throw new Error(data.error||"Unable to manage locations.");return data; }
+async function loadLocations(){const data=await locationRequest();currentLocations=data.locations||[];const options=currentLocations.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");manualShiftClinic.innerHTML=options;editWorkClinic.innerHTML=`<option value="">Unassigned</option>${options}`;locationsList.innerHTML=currentLocations.length?currentLocations.map(c=>`<p><strong>${escapeHtml(c.name)}</strong> — ${escapeHtml(c.code||"")}</p>`).join(""):"<p>No locations found.</p>";}
+function showLocationsView(){payrollView.classList.add("hidden");employeesView.classList.add("hidden");locationsView.classList.remove("hidden");payrollNavButton.classList.remove("active");employeesNavButton.classList.remove("active");locationsNavButton.classList.add("active");loadLocations().catch(e=>{locationAdminMessage.textContent=e.message;locationAdminMessage.classList.add("error");});}
 
 /* ==========================================================
    MESSAGES
@@ -2197,6 +2213,7 @@ loginForm.addEventListener(
       showPayrollView();
 
       await loadDashboard(null);
+      await loadLocations();
     } catch (error) {
       console.error(error);
 
@@ -2237,6 +2254,8 @@ employeesNavButton.addEventListener(
     }
   }
 );
+locationsNavButton.addEventListener("click",showLocationsView);
+locationForm.addEventListener("submit",async event=>{event.preventDefault();locationAdminMessage.textContent="Saving location...";locationAdminMessage.classList.remove("error");try{await locationRequest({method:"POST",body:JSON.stringify({name:locationName.value.trim(),code:locationCode.value.trim()})});locationForm.reset();await loadLocations();locationAdminMessage.textContent="Location added successfully. It is now available in both systems.";}catch(error){locationAdminMessage.textContent=error.message;locationAdminMessage.classList.add("error");}});
 
 logoutButton.addEventListener(
   "click",
@@ -3183,6 +3202,7 @@ if (getToken()) {
   showDashboard();
   showPayrollView();
   loadDashboard(null);
+  loadLocations().catch(() => {});
 } else {
   showLogin();
 }
