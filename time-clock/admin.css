@@ -447,6 +447,12 @@ TABLE
   min-width: 1000px;
 }
 
+.location-assignment-grid { display: grid; gap: 14px; margin-top: 12px; }
+.location-region { border: 1px solid #dbe4f2; border-radius: 12px; padding: 12px; }
+.location-region legend { color: #17233a; font-weight: 700; padding: 0 6px; }
+.location-region-options { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 10px; }
+.location-region .checkbox-label { margin: 0; }
+
 .payroll-table thead {
   background: #eff6ff;
 }

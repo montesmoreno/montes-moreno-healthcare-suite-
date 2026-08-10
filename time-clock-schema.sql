@@ -44,16 +44,27 @@ create table if not exists public.time_records (
   unique (employee_record_id, work_date)
 );
 
+create table if not exists public.employee_clinics (
+  employee_id uuid not null references public.employees(id) on delete cascade,
+  clinic_id uuid not null references public.clinics(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (employee_id, clinic_id)
+);
+
 create index if not exists idx_employees_org on public.employees(organization_id, active);
+create index if not exists idx_employee_clinics_employee on public.employee_clinics(employee_id);
+create index if not exists idx_employee_clinics_clinic on public.employee_clinics(clinic_id);
 create index if not exists idx_time_records_employee_date on public.time_records(employee_record_id, work_date desc);
 create index if not exists idx_time_records_org_period on public.time_records(organization_id, pay_period_start, pay_period_end);
 
 alter table public.employees enable row level security;
+alter table public.employee_clinics enable row level security;
 alter table public.time_records enable row level security;
 
 -- The server-side Vercel functions use the service role. This key is never
 -- exposed to the browser; RLS remains enabled as defense in depth.
 grant select, insert, update, delete on public.employees, public.time_records to service_role;
+grant select, insert, update, delete on public.employee_clinics to service_role;
 
 drop policy if exists "employees view same organization" on public.employees;
 create policy "employees view same organization" on public.employees

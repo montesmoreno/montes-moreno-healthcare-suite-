@@ -463,6 +463,7 @@
                       <th>Employee Name</th>
                       <th>Hourly Rate</th>
                       <th>Hire Date</th>
+                      <th>Locations</th>
                       <th>Status</th>
                       <th>Password Status</th>
                       <th>Actions</th>
@@ -472,7 +473,7 @@
                   <tbody id="employeesTableBody">
                     <tr>
                       <td
-                        colspan="7"
+                        colspan="8"
                         class="empty-state"
                       >
                         Employee information will appear here.
@@ -608,6 +609,12 @@
         </p>
       </div>
 
+      <div class="form-group">
+        <label>Assigned Locations</label>
+        <p class="field-help">The employee will only see the locations selected here.</p>
+        <div id="newEmployeeLocations" class="location-assignment-grid"></div>
+      </div>
+
       <div class="checkbox-group">
         <label class="checkbox-label">
           <input
@@ -675,6 +682,28 @@
 
     </form>
 
+  </div>
+</div>
+          <!-- ASSIGN EMPLOYEE LOCATIONS MODAL -->
+<div id="assignLocationsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="assignLocationsTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">EMPLOYEE ACCESS</p>
+        <h2 id="assignLocationsTitle">Assign Locations</h2>
+        <p id="assignLocationsEmployeeText" class="muted-text"></p>
+      </div>
+      <button id="closeAssignLocationsButton" class="modal-close-button" type="button" aria-label="Close">×</button>
+    </div>
+    <form id="assignLocationsForm">
+      <input id="assignLocationsEmployeeId" type="hidden" />
+      <div id="editEmployeeLocations" class="location-assignment-grid"></div>
+      <div class="modal-actions">
+        <button id="cancelAssignLocationsButton" class="secondary-button" type="button">Cancel</button>
+        <button id="saveAssignedLocationsButton" class="primary-button" type="submit">Save Locations</button>
+      </div>
+      <p id="assignLocationsMessage" class="message" aria-live="polite"></p>
+    </form>
   </div>
 </div>
           <!-- RESET PASSWORD MODAL -->

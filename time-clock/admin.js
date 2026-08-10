@@ -250,6 +250,16 @@ const newEmployeeNotes =
   document.getElementById(
     "newEmployeeNotes"
   );
+const newEmployeeLocations = document.getElementById("newEmployeeLocations");
+const assignLocationsModal = document.getElementById("assignLocationsModal");
+const assignLocationsForm = document.getElementById("assignLocationsForm");
+const assignLocationsEmployeeId = document.getElementById("assignLocationsEmployeeId");
+const assignLocationsEmployeeText = document.getElementById("assignLocationsEmployeeText");
+const editEmployeeLocations = document.getElementById("editEmployeeLocations");
+const closeAssignLocationsButton = document.getElementById("closeAssignLocationsButton");
+const cancelAssignLocationsButton = document.getElementById("cancelAssignLocationsButton");
+const saveAssignedLocationsButton = document.getElementById("saveAssignedLocationsButton");
+const assignLocationsMessage = document.getElementById("assignLocationsMessage");
 /* EDIT TIME RECORD MODAL */
 
 const editTimeRecordModal =
@@ -400,6 +410,11 @@ function showEmployeesView() {
 
 async function locationRequest(options={}) { const response=await fetch("/api/employees",{...options,headers:{"Content-Type":"application/json",Authorization:`Bearer ${getToken()}`,...options.headers}});const data=await response.json();if(response.status===401)throw new Error("UNAUTHORIZED");if(!response.ok)throw new Error(data.error||"Unable to manage locations.");return data; }
 async function loadLocations(){const data=await locationRequest();currentLocations=data.locations||[];const options=currentLocations.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");manualShiftClinic.innerHTML=options;editWorkClinic.innerHTML=`<option value="">Unassigned</option>${options}`;locationsList.innerHTML=currentLocations.length?currentLocations.map(c=>`<p><strong>${escapeHtml(c.name)}</strong> — ${escapeHtml(c.code||"")}</p>`).join(""):"<p>No locations found.</p>";}
+function locationRegion(name){if(["Goliad","Guadalupe","Sagrado Corazon","San Pedro","Walzem"].includes(name))return"San Antonio";if(name==="Rundberg")return"Austin";if(["West Texas","Odessa"].includes(name))return"West Texas / Odessa";return"Other Locations";}
+function renderLocationAssignments(container,selected=[]){const selectedSet=new Set(selected);const groups={};currentLocations.forEach(location=>{const region=locationRegion(location.name);(groups[region]||=[]).push(location);});container.innerHTML=Object.entries(groups).map(([region,locations])=>`<fieldset class="location-region"><legend>${escapeHtml(region)}</legend><div class="location-region-options">${locations.map(location=>`<label class="checkbox-label"><input type="checkbox" name="employeeLocation" value="${escapeHtml(location.id)}" ${selectedSet.has(location.id)?"checked":""}/><span>${escapeHtml(location.name)}</span></label>`).join("")}</div></fieldset>`).join("");}
+function selectedLocationIds(container){return Array.from(container.querySelectorAll('input[name="employeeLocation"]:checked')).map(input=>input.value);}
+function openAssignLocations(employee){assignLocationsEmployeeId.value=employee.pageId;assignLocationsEmployeeText.textContent=`${employee.name} — Employee ID: ${employee.id}`;assignLocationsMessage.textContent="";renderLocationAssignments(editEmployeeLocations,employee.locationIds||[]);assignLocationsModal.classList.remove("hidden");document.body.classList.add("modal-open");}
+function closeAssignLocations(){assignLocationsModal.classList.add("hidden");document.body.classList.remove("modal-open");}
 function showLocationsView(){payrollView.classList.add("hidden");employeesView.classList.add("hidden");locationsView.classList.remove("hidden");payrollNavButton.classList.remove("active");employeesNavButton.classList.remove("active");locationsNavButton.classList.add("active");loadLocations().catch(e=>{locationAdminMessage.textContent=e.message;locationAdminMessage.classList.add("error");});}
 
 /* ==========================================================
@@ -1446,6 +1461,8 @@ function renderEmployees(data) {
     ${formatDate(employee.hireDate)}
   </td>
 
+  <td>${(employee.locationNames||[]).map(escapeHtml).join(", ") || "Unassigned"}</td>
+
   <td>
     <span class="status-badge ${statusClass}">
       ${statusText}
@@ -1460,6 +1477,14 @@ function renderEmployees(data) {
 
 <td>
   <div class="employee-actions">
+
+    <button
+      type="button"
+      class="secondary-button assign-locations-button"
+      data-page-id="${escapeHtml(employee.pageId)}"
+    >
+      Assign Locations
+    </button>
 
     <button
       type="button"
@@ -1526,6 +1551,8 @@ function openAddEmployeeModal() {
     new Date()
       .toISOString()
       .slice(0,10);
+
+  renderLocationAssignments(newEmployeeLocations, []);
 
   addEmployeeModal.classList.remove(
     "hidden"
@@ -2376,6 +2403,12 @@ addEmployeeModal.addEventListener(
 
   }
 );
+
+document.addEventListener("click",(event)=>{const button=event.target.closest(".assign-locations-button");if(!button)return;const employee=(currentEmployeesData?.employees||[]).find(item=>item.pageId===button.dataset.pageId);if(employee)openAssignLocations(employee);});
+closeAssignLocationsButton.addEventListener("click",closeAssignLocations);
+cancelAssignLocationsButton.addEventListener("click",closeAssignLocations);
+assignLocationsModal.addEventListener("click",event=>{if(event.target===assignLocationsModal)closeAssignLocations();});
+assignLocationsForm.addEventListener("submit",async(event)=>{event.preventDefault();const locationIds=selectedLocationIds(editEmployeeLocations);if(!locationIds.length){assignLocationsMessage.textContent="Select at least one location.";assignLocationsMessage.classList.add("error");return;}saveAssignedLocationsButton.disabled=true;assignLocationsMessage.textContent="Saving locations...";assignLocationsMessage.classList.remove("error");try{await locationRequest({method:"PATCH",body:JSON.stringify({employeePageId:assignLocationsEmployeeId.value,locationIds})});closeAssignLocations();await loadEmployees();setEmployeesMessage("Employee locations updated.");}catch(error){assignLocationsMessage.textContent=error.message;assignLocationsMessage.classList.add("error");}finally{saveAssignedLocationsButton.disabled=false;}});
 /* ==========================================================
    RESET PASSWORD BUTTONS
 ========================================================== */
@@ -2811,15 +2844,19 @@ addEmployeeForm.addEventListener(
     const notes =
       newEmployeeNotes.value.trim();
 
+    const locationIds =
+      selectedLocationIds(newEmployeeLocations);
+
     if (
       !employeeId ||
       !name ||
       !Number.isFinite(hourlyRate) ||
       hourlyRate <= 0 ||
-      password.length < 8
+      password.length < 8 ||
+      locationIds.length === 0
     ) {
       addEmployeeMessage.textContent =
-        "Complete all required fields. The password must contain at least 8 characters.";
+        "Complete all required fields, select at least one location, and use a password with at least 8 characters.";
 
       addEmployeeMessage.classList.add(
         "error"
@@ -2847,7 +2884,8 @@ addEmployeeForm.addEventListener(
         password,
         active,
         mustChangePassword,
-        notes
+        notes,
+        locationIds
       });
 
       closeAddEmployeeModal();
