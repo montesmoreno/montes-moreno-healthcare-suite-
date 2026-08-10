@@ -398,7 +398,7 @@ function showEmployeesView() {
   locationsNavButton.classList.remove("active");
 }
 
-async function locationRequest(options={}) { const response=await fetch("/api/locations",{...options,headers:{"Content-Type":"application/json",Authorization:`Bearer ${getToken()}`,...options.headers}});const data=await response.json();if(response.status===401)throw new Error("UNAUTHORIZED");if(!response.ok)throw new Error(data.error||"Unable to manage locations.");return data; }
+async function locationRequest(options={}) { const response=await fetch("/api/employees",{...options,headers:{"Content-Type":"application/json",Authorization:`Bearer ${getToken()}`,...options.headers}});const data=await response.json();if(response.status===401)throw new Error("UNAUTHORIZED");if(!response.ok)throw new Error(data.error||"Unable to manage locations.");return data; }
 async function loadLocations(){const data=await locationRequest();currentLocations=data.locations||[];const options=currentLocations.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");manualShiftClinic.innerHTML=options;editWorkClinic.innerHTML=`<option value="">Unassigned</option>${options}`;locationsList.innerHTML=currentLocations.length?currentLocations.map(c=>`<p><strong>${escapeHtml(c.name)}</strong> — ${escapeHtml(c.code||"")}</p>`).join(""):"<p>No locations found.</p>";}
 function showLocationsView(){payrollView.classList.add("hidden");employeesView.classList.add("hidden");locationsView.classList.remove("hidden");payrollNavButton.classList.remove("active");employeesNavButton.classList.remove("active");locationsNavButton.classList.add("active");loadLocations().catch(e=>{locationAdminMessage.textContent=e.message;locationAdminMessage.classList.add("error");});}
 

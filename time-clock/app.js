@@ -83,12 +83,12 @@ function render() {
 }
 
 async function loadDashboard() {
-  const [data, locationData] = await Promise.all([api("/api/status", { headers: authHeaders() }), api("/api/locations", { headers: authHeaders() })]);
+  const data = await api("/api/status", { headers: authHeaders() });
   state.employee = data.employee;
   state.current = data.current;
   state.records = data.records;
   state.period = data.period || null;
-  $("clinicOptions").innerHTML = (locationData.locations || []).map(c => `<label class="clinic-option"><input type="radio" name="workClinic" value="${escapeHtml(c.name)}" /><span>${escapeHtml(c.name)}</span></label>`).join("");
+  $("clinicOptions").innerHTML = (data.locations || []).map(c => `<label class="clinic-option"><input type="radio" name="workClinic" value="${escapeHtml(c.name)}" /><span>${escapeHtml(c.name)}</span></label>`).join("");
   $("loginView").classList.add("hidden");
   $("dashboardView").classList.remove("hidden");
   render();
