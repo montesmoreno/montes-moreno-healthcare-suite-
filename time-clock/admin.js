@@ -260,6 +260,16 @@ const closeAssignLocationsButton = document.getElementById("closeAssignLocations
 const cancelAssignLocationsButton = document.getElementById("cancelAssignLocationsButton");
 const saveAssignedLocationsButton = document.getElementById("saveAssignedLocationsButton");
 const assignLocationsMessage = document.getElementById("assignLocationsMessage");
+const editEmployeeModal = document.getElementById("editEmployeeModal");
+const editEmployeeForm = document.getElementById("editEmployeeForm");
+const editEmployeePageId = document.getElementById("editEmployeePageId");
+const editEmployeeName = document.getElementById("editEmployeeName");
+const editEmployeeHourlyRate = document.getElementById("editEmployeeHourlyRate");
+const editEmployeeReason = document.getElementById("editEmployeeReason");
+const closeEditEmployeeButton = document.getElementById("closeEditEmployeeButton");
+const cancelEditEmployeeButton = document.getElementById("cancelEditEmployeeButton");
+const saveEditEmployeeButton = document.getElementById("saveEditEmployeeButton");
+const editEmployeeMessage = document.getElementById("editEmployeeMessage");
 /* EDIT TIME RECORD MODAL */
 
 const editTimeRecordModal =
@@ -415,6 +425,8 @@ function renderLocationAssignments(container,selected=[]){const selectedSet=new 
 function selectedLocationIds(container){return Array.from(container.querySelectorAll('input[name="employeeLocation"]:checked')).map(input=>input.value);}
 function openAssignLocations(employee){assignLocationsEmployeeId.value=employee.pageId;assignLocationsEmployeeText.textContent=`${employee.name} — Employee ID: ${employee.id}`;assignLocationsMessage.textContent="";renderLocationAssignments(editEmployeeLocations,employee.locationIds||[]);assignLocationsModal.classList.remove("hidden");document.body.classList.add("modal-open");}
 function closeAssignLocations(){assignLocationsModal.classList.add("hidden");document.body.classList.remove("modal-open");}
+function openEditEmployee(employee){editEmployeePageId.value=employee.pageId;editEmployeeName.value=employee.name;editEmployeeHourlyRate.value=Number(employee.rate).toFixed(2);editEmployeeReason.value="";editEmployeeMessage.textContent="";editEmployeeModal.classList.remove("hidden");document.body.classList.add("modal-open");}
+function closeEditEmployee(){editEmployeeModal.classList.add("hidden");document.body.classList.remove("modal-open");}
 function showLocationsView(){payrollView.classList.add("hidden");employeesView.classList.add("hidden");locationsView.classList.remove("hidden");payrollNavButton.classList.remove("active");employeesNavButton.classList.remove("active");locationsNavButton.classList.add("active");loadLocations().catch(e=>{locationAdminMessage.textContent=e.message;locationAdminMessage.classList.add("error");});}
 
 /* ==========================================================
@@ -1480,6 +1492,14 @@ function renderEmployees(data) {
 
     <button
       type="button"
+      class="secondary-button edit-employee-button"
+      data-page-id="${escapeHtml(employee.pageId)}"
+    >
+      Edit Employee
+    </button>
+
+    <button
+      type="button"
       class="secondary-button assign-locations-button"
       data-page-id="${escapeHtml(employee.pageId)}"
     >
@@ -2409,6 +2429,11 @@ closeAssignLocationsButton.addEventListener("click",closeAssignLocations);
 cancelAssignLocationsButton.addEventListener("click",closeAssignLocations);
 assignLocationsModal.addEventListener("click",event=>{if(event.target===assignLocationsModal)closeAssignLocations();});
 assignLocationsForm.addEventListener("submit",async(event)=>{event.preventDefault();const locationIds=selectedLocationIds(editEmployeeLocations);if(!locationIds.length){assignLocationsMessage.textContent="Select at least one location.";assignLocationsMessage.classList.add("error");return;}saveAssignedLocationsButton.disabled=true;assignLocationsMessage.textContent="Saving locations...";assignLocationsMessage.classList.remove("error");try{await locationRequest({method:"PATCH",body:JSON.stringify({employeePageId:assignLocationsEmployeeId.value,locationIds})});closeAssignLocations();await loadEmployees();setEmployeesMessage("Employee locations updated.");}catch(error){assignLocationsMessage.textContent=error.message;assignLocationsMessage.classList.add("error");}finally{saveAssignedLocationsButton.disabled=false;}});
+document.addEventListener("click",event=>{const button=event.target.closest(".edit-employee-button");if(!button)return;const employee=(currentEmployeesData?.employees||[]).find(item=>item.pageId===button.dataset.pageId);if(employee)openEditEmployee(employee);});
+closeEditEmployeeButton.addEventListener("click",closeEditEmployee);
+cancelEditEmployeeButton.addEventListener("click",closeEditEmployee);
+editEmployeeModal.addEventListener("click",event=>{if(event.target===editEmployeeModal)closeEditEmployee();});
+editEmployeeForm.addEventListener("submit",async(event)=>{event.preventDefault();const name=editEmployeeName.value.trim();const hourlyRate=Number(editEmployeeHourlyRate.value);const reason=editEmployeeReason.value.trim();if(name.length<2||!Number.isFinite(hourlyRate)||hourlyRate<=0||!reason){editEmployeeMessage.textContent="Enter a valid name, hourly rate, and reason for the change.";editEmployeeMessage.classList.add("error");return;}saveEditEmployeeButton.disabled=true;editEmployeeMessage.textContent="Saving effective change...";editEmployeeMessage.classList.remove("error");try{await locationRequest({method:"PATCH",body:JSON.stringify({action:"profile",employeePageId:editEmployeePageId.value,name,hourlyRate,reason})});closeEditEmployee();await Promise.all([loadEmployees(),loadDashboard(selectedPeriodDate)]);setEmployeesMessage("Employee updated. Previous payroll records were preserved.");}catch(error){editEmployeeMessage.textContent=error.message;editEmployeeMessage.classList.add("error");}finally{saveEditEmployeeButton.disabled=false;}});
 /* ==========================================================
    RESET PASSWORD BUTTONS
 ========================================================== */

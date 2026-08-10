@@ -684,6 +684,30 @@
 
   </div>
 </div>
+          <!-- EDIT EMPLOYEE MODAL -->
+<div id="editEmployeeModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="editEmployeeTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">EMPLOYEE MANAGEMENT</p>
+        <h2 id="editEmployeeTitle">Edit Employee</h2>
+        <p class="muted-text">Changes apply only to new time records. Previous payroll records remain unchanged.</p>
+      </div>
+      <button id="closeEditEmployeeButton" class="modal-close-button" type="button" aria-label="Close">×</button>
+    </div>
+    <form id="editEmployeeForm">
+      <input id="editEmployeePageId" type="hidden" />
+      <div class="form-group"><label for="editEmployeeName">Employee Name</label><input id="editEmployeeName" type="text" required /></div>
+      <div class="form-group"><label for="editEmployeeHourlyRate">Hourly Rate</label><input id="editEmployeeHourlyRate" type="number" min="0.01" step="0.01" required /></div>
+      <div class="form-group"><label for="editEmployeeReason">Reason for Change</label><textarea id="editEmployeeReason" rows="3" maxlength="500" placeholder="Example: Pay increase effective today" required></textarea></div>
+      <div class="modal-actions">
+        <button id="cancelEditEmployeeButton" class="secondary-button" type="button">Cancel</button>
+        <button id="saveEditEmployeeButton" class="primary-button" type="submit">Save Effective Today</button>
+      </div>
+      <p id="editEmployeeMessage" class="message" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
           <!-- ASSIGN EMPLOYEE LOCATIONS MODAL -->
 <div id="assignLocationsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="assignLocationsTitle">
   <div class="modal-card">
