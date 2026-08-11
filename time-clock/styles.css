@@ -98,3 +98,5 @@ button:disabled{opacity:.5;cursor:not-allowed}.login-card button{width:100%}.hid
     grid-template-columns: 1fr;
   }
 }
+
+.password-change-signout{width:100%;margin-top:10px}.login-card .password-change-signout{background:#fff;color:#183b4e;border:1px solid #cbd8de}

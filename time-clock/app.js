@@ -82,9 +82,36 @@ function render() {
     : '<tr><td colspan="6">No records in this pay period.</td></tr>';
 }
 
+function showPasswordChange(employee) {
+  state.employee = employee || state.employee;
+  $("loginView").classList.add("hidden");
+  $("dashboardView").classList.add("hidden");
+  $("passwordChangeView").classList.remove("hidden");
+  $("newPassword").value = "";
+  $("confirmNewPassword").value = "";
+  message($("passwordChangeMessage"), "");
+  $("newPassword").focus();
+}
+
+function signOut() {
+  sessionStorage.removeItem("mmha_token");
+  state.token = null;
+  state.employee = null;
+  $("employeeId").value = "";
+  $("password").value = "";
+  $("passwordChangeView").classList.add("hidden");
+  $("dashboardView").classList.add("hidden");
+  $("loginView").classList.remove("hidden");
+  $("employeeId").focus();
+}
+
 async function loadDashboard() {
   const data = await api("/api/status", { headers: authHeaders() });
   state.employee = data.employee;
+  if (data.mustChangePassword || data.employee?.mustChangePassword) {
+    showPasswordChange(data.employee);
+    return;
+  }
   state.current = data.current;
   state.records = data.records;
   state.period = data.period || null;
@@ -105,11 +132,31 @@ $("loginForm").addEventListener("submit", async (event) => {
     });
     state.token = data.token;
     sessionStorage.setItem("mmha_token", data.token);
-    await loadDashboard();
+    if (data.employee?.mustChangePassword) showPasswordChange(data.employee);
+    else await loadDashboard();
   } catch (error) {
     message($("loginMessage"), error.message, "error");
   }
 });
+
+$("passwordChangeForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const newPassword = $("newPassword").value;
+  const confirmPassword = $("confirmNewPassword").value;
+  if (newPassword.length < 8) return message($("passwordChangeMessage"), "Password must contain at least 8 characters.", "error");
+  if (newPassword !== confirmPassword) return message($("passwordChangeMessage"), "Passwords do not match.", "error");
+  message($("passwordChangeMessage"), "Saving new password...");
+  try {
+    await api("/api/employee-password-reset", { method:"POST", headers:authHeaders(), body:JSON.stringify({ newPassword }) });
+    message($("passwordChangeMessage"), "Password changed successfully.", "success");
+    $("passwordChangeView").classList.add("hidden");
+    await loadDashboard();
+  } catch (error) {
+    message($("passwordChangeMessage"), error.message, "error");
+  }
+});
+
+$("passwordChangeLogoutButton").addEventListener("click", signOut);
 
 $("clockInButton").addEventListener("click", async () => {
 
@@ -180,19 +227,7 @@ $("clockOutButton").addEventListener("click", async () => {
   } catch (error) { message($("actionMessage"), error.message, "error"); }
 });
 
-$("logoutButton").addEventListener("click", () => {
-  sessionStorage.removeItem("mmha_token");
-
-  state.token = null;
-
-  $("employeeId").value = "";
-  $("password").value = "";
-
-  $("dashboardView").classList.add("hidden");
-  $("loginView").classList.remove("hidden");
-
-  $("employeeId").focus();
-});
+$("logoutButton").addEventListener("click", signOut);
 
 tick();
 setInterval(tick, 1000);
@@ -225,6 +260,7 @@ window.addEventListener(
       $("dashboardView").classList.add(
         "hidden"
       );
+      $("passwordChangeView").classList.add("hidden");
 
       $("loginView").classList.remove(
         "hidden"

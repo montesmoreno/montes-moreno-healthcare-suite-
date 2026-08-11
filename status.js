@@ -1,0 +1,21 @@
+import { json, db, requireRole, centralDate, payrollDates, mapRecord, handlerError } from "./_clock.js";
+export default async function handler(req,res){
+  if(req.method!=="GET")return json(res,405,{error:"Method not allowed"});
+  try{
+    const user=requireRole(req,"employee");
+    const client=db();
+    const {data:employee,error:employeeError}=await client.from("employees").select("id,employee_id,full_name,active,time_clock_enabled,must_change_password").eq("id",user.sub).maybeSingle();
+    if(employeeError)throw employeeError;
+    if(!employee||!employee.active||!employee.time_clock_enabled)return json(res,403,{error:"Employee is not authorized to use Time Clock."});
+    if(employee.must_change_password)return json(res,200,{employee:{id:employee.employee_id,name:employee.full_name,mustChangePassword:true},mustChangePassword:true});
+    const period=payrollDates();
+    const [{data,error},{data:assignments,error:le}]=await Promise.all([
+      client.from("time_records").select("*,clinic:clinics(name)").eq("employee_record_id",user.sub).gte("work_date",period.start).lte("work_date",period.end).order("work_date",{ascending:false}),
+      client.from("employee_clinics").select("clinic:clinics!inner(id,name,code,active)").eq("employee_id",user.sub).eq("clinic.active",true)
+    ]);
+    if(error)throw error;if(le)throw le;
+    const records=(data||[]).map(mapRecord);
+    const locations=(assignments||[]).map(x=>x.clinic).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
+    return json(res,200,{employee:{id:employee.employee_id,name:employee.full_name,mustChangePassword:false},mustChangePassword:false,current:records.find(x=>x.workDate===centralDate())||null,period,records,locations});
+  }catch(e){return handlerError(res,e);}
+}
