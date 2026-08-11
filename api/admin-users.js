@@ -53,7 +53,7 @@ async function listUsers(profile) {
   });
 }
 
-module.exports = async function handler(req, res) {
+module exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido.' });
   if (!SUPABASE_URL || !SERVICE_ROLE || !PUBLISHABLE_KEY) {
     return res.status(500).json({ error: 'Faltan variables seguras en Vercel.' });
