@@ -26,6 +26,24 @@
       <p><a href="/inventory">Inventory Administration</a> · <a href="/time-clock/admin">Payroll Administration</a></p>
     </section>
 
+
+    <section id="passwordChangeView" class="card login-card hidden">
+      <div class="logo">MM</div>
+      <h2>Create a New Password</h2>
+      <p class="subtitle">For security, you must create your own password before using Time Clock.</p>
+      <form id="passwordChangeForm">
+        <label>New Password
+          <input id="newPassword" type="password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <label>Confirm New Password
+          <input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <button type="submit">Save New Password</button>
+        <p id="passwordChangeMessage" class="message"></p>
+      </form>
+      <button id="passwordChangeLogoutButton" class="secondary password-change-signout" type="button">Sign Out</button>
+    </section>
+
     <section id="dashboardView" class="dashboard hidden">
       <header class="card topbar">
         <div>
