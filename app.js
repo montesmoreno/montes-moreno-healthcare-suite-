@@ -26,6 +26,138 @@
     return String(value ?? '').replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
   }
 
+  function selectedClinicLabel() {
+    if (state.selectedClinic === 'all') return 'Vista consolidada';
+    return state.clinics.find(clinic => clinic.id === state.selectedClinic)?.name || 'Clínica';
+  }
+
+  function inventoryExportRows() {
+    return [...state.stock].sort((a, b) => {
+      const clinicCompare = String(a.clinic_name || '').localeCompare(String(b.clinic_name || ''), 'es');
+      if (clinicCompare) return clinicCompare;
+      return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+    });
+  }
+
+  function inventoryStatus(item) {
+    const quantity = Number(item?.quantity || 0);
+    const minimum = Number(item?.minimum_stock || 0);
+    if (quantity <= 0) return 'Agotado';
+    if (quantity <= minimum) return 'Stock bajo';
+    return 'Disponible';
+  }
+
+  function exportFileStem() {
+    const clinic = selectedClinicLabel()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'Inventario';
+    const date = new Date().toISOString().slice(0, 10);
+    return `Inventario-${clinic}-${date}`;
+  }
+
+  function csvCell(value) {
+    const text = String(value ?? '');
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  function exportInventoryCsv() {
+    const rows = inventoryExportRows();
+    if (!rows.length) {
+      alert('No hay inventario para exportar en la clínica seleccionada.');
+      return;
+    }
+
+    const header = ['Clínica', 'Código', 'Producto', 'Categoría', 'Stock actual', 'Stock mínimo', 'Unidad', 'Estado'];
+    const lines = [header, ...rows.map(item => [
+      item.clinic_name || '',
+      item.product_code || '',
+      item.name || '',
+      item.category || '',
+      formatQty(item.quantity),
+      formatQty(item.minimum_stock),
+      item.unit || '',
+      inventoryStatus(item)
+    ])].map(row => row.map(csvCell).join(','));
+
+    // BOM keeps accented Spanish text readable when the CSV is opened in Excel.
+    const blob = new Blob([`\ufeff${lines.join('\r\n')}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${exportFileStem()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportInventoryPdf() {
+    const rows = inventoryExportRows();
+    if (!rows.length) {
+      alert('No hay inventario para exportar en la clínica seleccionada.');
+      return;
+    }
+
+    const clinic = selectedClinicLabel();
+    const generated = new Intl.DateTimeFormat('es-US', {
+      year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    }).format(new Date());
+    const reportWindow = window.open('', '_blank', 'noopener,noreferrer');
+    if (!reportWindow) {
+      alert('El navegador bloqueó la ventana del reporte. Permite ventanas emergentes e inténtalo nuevamente.');
+      return;
+    }
+
+    const tableRows = rows.map(item => `
+      <tr>
+        <td>${escapeHtml(item.clinic_name || '')}</td>
+        <td>${escapeHtml(item.product_code || '')}</td>
+        <td>${escapeHtml(item.name || '')}</td>
+        <td>${escapeHtml(item.category || '')}</td>
+        <td class="num">${escapeHtml(formatQty(item.quantity))}</td>
+        <td class="num">${escapeHtml(formatQty(item.minimum_stock))}</td>
+        <td>${escapeHtml(item.unit || '')}</td>
+        <td>${escapeHtml(inventoryStatus(item))}</td>
+      </tr>`).join('');
+
+    reportWindow.document.write(`<!doctype html>
+      <html lang="es"><head><meta charset="utf-8"><title>${escapeHtml(exportFileStem())}</title>
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <style>
+        @page { size: landscape; margin: 12mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #17202a; background: #fff; }
+        .report { padding: 22px; }
+        .report-head { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; border-bottom: 3px solid #0f4c5c; padding-bottom: 14px; margin-bottom: 18px; }
+        h1 { margin: 0 0 5px; font-size: 24px; color: #0f4c5c; }
+        .subtitle { margin: 0; font-size: 15px; font-weight: 700; }
+        .meta { text-align: right; color: #52606d; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        th { background: #eef5f6; color: #173b45; text-align: left; font-weight: 700; border-bottom: 1px solid #b7cbd0; padding: 7px 6px; }
+        td { border-bottom: 1px solid #dfe7ec; padding: 6px; vertical-align: top; }
+        tbody tr:nth-child(even) { background: #fafcfc; }
+        .num { text-align: right; }
+        .report-footer { margin-top: 12px; color: #667085; font-size: 10px; }
+        .print-bar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+        button { border: 0; border-radius: 7px; padding: 9px 13px; background: #0f4c5c; color: white; font-weight: 700; cursor: pointer; }
+        @media print { .print-bar { display: none; } .report { padding: 0; } }
+      </style></head><body>
+      <main class="report">
+        <div class="print-bar"><button onclick="window.print()">Guardar como PDF / Imprimir</button></div>
+        <header class="report-head">
+          <div><h1>Yandi Inventory</h1><p class="subtitle">Reporte de inventario actual · ${escapeHtml(clinic)}</p></div>
+          <div class="meta">Generado: ${escapeHtml(generated)}<br>Productos: ${rows.length}</div>
+        </header>
+        <table><thead><tr><th>Clínica</th><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Unidad</th><th>Estado</th></tr></thead>
+        <tbody>${tableRows}</tbody></table>
+        <div class="report-footer">Este reporte refleja el inventario cargado en el Dashboard al momento de generarse.</div>
+      </main></body></html>`);
+    reportWindow.document.close();
+    reportWindow.focus();
+  }
+
   function normalizeWebsiteUrl(value) {
     const raw = String(value || '').trim();
     if (!raw) return '';
@@ -2393,6 +2525,8 @@ $('receivingClinic').value = activeClinicId();
   $('addLocationForm').addEventListener('submit', addLocation);
   $('clinicSelector').addEventListener('change', async (e) => { state.selectedClinic = e.target.value; await loadData(); });
   $('search').addEventListener('input', renderDashboard);
+  $('exportInventoryCsv').addEventListener('click', exportInventoryCsv);
+  $('exportInventoryPdf').addEventListener('click', exportInventoryPdf);
 
   $('stats').addEventListener('click', event => {
     const actionCard = event.target.closest('[data-dashboard-action]');
