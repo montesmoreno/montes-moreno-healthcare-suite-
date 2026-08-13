@@ -761,3 +761,15 @@ th { background: #f7fafb; }
   color: #667085;
   font-size: .88rem;
 }
+
+/* Dashboard inventory export */
+.inventory-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1; }
+.inventory-toolbar input { flex: 1 1 260px; }
+.export-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.export-button { white-space: nowrap; padding: 10px 13px; }
+@media (max-width: 760px) {
+  .inventory-toolbar { width: 100%; flex-direction: column; align-items: stretch; }
+  .inventory-toolbar input { flex-basis: auto; max-width: none; }
+  .export-actions { width: 100%; }
+  .export-actions .export-button { flex: 1 1 145px; }
+}

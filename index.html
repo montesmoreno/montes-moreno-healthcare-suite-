@@ -54,7 +54,16 @@
         </section>
         <section class="panel">
           <div id="activeFilterBanner" class="filter-banner" hidden><span id="activeFilterText"></span><button id="clearDashboardFilter" type="button">Limpiar filtro</button></div>
-          <div class="section-title inventory-tools"><h2>Inventario actual</h2><input id="search" placeholder="Buscar producto..." /></div>
+          <div class="section-title inventory-tools">
+            <h2>Inventario actual</h2>
+            <div class="inventory-toolbar">
+              <input id="search" placeholder="Buscar producto..." />
+              <div class="export-actions" aria-label="Exportar inventario actual">
+                <button id="exportInventoryCsv" type="button" class="secondary export-button">Descargar CSV</button>
+                <button id="exportInventoryPdf" type="button" class="secondary export-button">PDF / Imprimir</button>
+              </div>
+            </div>
+          </div>
           <div class="table-wrap"><table><thead><tr><th>Clínica</th><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Unidad</th><th>Estado</th></tr></thead><tbody id="inventoryBody"></tbody></table></div>
         </section>
       </section>
