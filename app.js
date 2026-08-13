@@ -32,11 +32,44 @@
   }
 
   function inventoryExportRows() {
-    return [...state.stock].sort((a, b) => {
+    const stockRows = [...state.stock].sort((a, b) => {
       const clinicCompare = String(a.clinic_name || '').localeCompare(String(b.clinic_name || ''), 'es');
       if (clinicCompare) return clinicCompare;
       return String(a.name || '').localeCompare(String(b.name || ''), 'es');
     });
+
+    const exportRows = [];
+    for (const item of stockRows) {
+      const lots = state.lots
+        .filter(lot =>
+          lot.clinic_id === item.clinic_id &&
+          lot.product_id === item.product_id &&
+          Number(lot.quantity || 0) > 0
+        )
+        .sort((a, b) => {
+          const aDate = a.expiration_date ? new Date(`${a.expiration_date}T00:00:00`).getTime() : Number.MAX_SAFE_INTEGER;
+          const bDate = b.expiration_date ? new Date(`${b.expiration_date}T00:00:00`).getTime() : Number.MAX_SAFE_INTEGER;
+          return aDate - bDate || String(a.lot_number || '').localeCompare(String(b.lot_number || ''), 'es');
+        });
+
+      if (lots.length) {
+        lots.forEach(lot => exportRows.push({
+          ...item,
+          lot_number: lot.lot_number || '',
+          expiration_date: lot.expiration_date || '',
+          lot_quantity: Number(lot.quantity || 0)
+        }));
+      } else {
+        exportRows.push({
+          ...item,
+          lot_number: '',
+          expiration_date: '',
+          lot_quantity: Number(item.quantity || 0)
+        });
+      }
+    }
+
+    return exportRows;
   }
 
   function inventoryStatus(item) {
@@ -69,12 +102,15 @@
       return;
     }
 
-    const header = ['Clínica', 'Código', 'Producto', 'Categoría', 'Stock actual', 'Stock mínimo', 'Unidad', 'Estado'];
+    const header = ['Clínica', 'Código', 'Producto', 'Categoría', 'Lote', 'Fecha de expiración', 'Cantidad del lote', 'Stock total', 'Stock mínimo', 'Unidad', 'Estado'];
     const lines = [header, ...rows.map(item => [
       item.clinic_name || '',
       item.product_code || '',
       item.name || '',
       item.category || '',
+      item.lot_number || 'Sin lote',
+      item.expiration_date || 'Sin fecha',
+      formatQty(item.lot_quantity),
       formatQty(item.quantity),
       formatQty(item.minimum_stock),
       item.unit || '',
@@ -116,6 +152,9 @@
         <td>${escapeHtml(item.product_code || '')}</td>
         <td>${escapeHtml(item.name || '')}</td>
         <td>${escapeHtml(item.category || '')}</td>
+        <td>${escapeHtml(item.lot_number || 'Sin lote')}</td>
+        <td>${escapeHtml(item.expiration_date || 'Sin fecha')}</td>
+        <td class="num">${escapeHtml(formatQty(item.lot_quantity))}</td>
         <td class="num">${escapeHtml(formatQty(item.quantity))}</td>
         <td class="num">${escapeHtml(formatQty(item.minimum_stock))}</td>
         <td>${escapeHtml(item.unit || '')}</td>
@@ -148,9 +187,9 @@
         <div class="print-bar"><button onclick="window.print()">Guardar como PDF / Imprimir</button></div>
         <header class="report-head">
           <div><h1>Yandi Inventory</h1><p class="subtitle">Reporte de inventario actual · ${escapeHtml(clinic)}</p></div>
-          <div class="meta">Generado: ${escapeHtml(generated)}<br>Productos: ${rows.length}</div>
+          <div class="meta">Generado: ${escapeHtml(generated)}<br>Productos: ${new Set(rows.map(item => `${item.clinic_id}:${item.product_id}`)).size}<br>Lotes con stock: ${rows.filter(item => item.lot_number).length}</div>
         </header>
-        <table><thead><tr><th>Clínica</th><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Unidad</th><th>Estado</th></tr></thead>
+        <table><thead><tr><th>Clínica</th><th>Código</th><th>Producto</th><th>Categoría</th><th>Lote</th><th>Expiración</th><th>Cant. lote</th><th>Stock total</th><th>Mínimo</th><th>Unidad</th><th>Estado</th></tr></thead>
         <tbody>${tableRows}</tbody></table>
         <div class="report-footer">Este reporte refleja el inventario cargado en el Dashboard al momento de generarse.</div>
       </main></body></html>`);
