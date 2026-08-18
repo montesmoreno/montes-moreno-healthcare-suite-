@@ -1885,6 +1885,9 @@
           .join('');
 
       $('auditClinic').dataset.ready = 'true';
+      $('auditClinic').value = state.selectedClinic && state.selectedClinic !== 'all'
+        ? state.selectedClinic
+        : '';
     }
 
     const clinicId = $('auditClinic').value;
@@ -2601,7 +2604,17 @@ $('receivingClinic').value = activeClinicId();
   $('addLocationBtn').addEventListener('click', () => $('addLocationDialog').showModal());
   $('cancelLocationBtn').addEventListener('click', () => $('addLocationDialog').close());
   $('addLocationForm').addEventListener('submit', addLocation);
-  $('clinicSelector').addEventListener('change', async (e) => { state.selectedClinic = e.target.value; await loadData(); });
+  $('clinicSelector').addEventListener('change', async (event) => {
+    state.selectedClinic = event.target.value;
+
+    // Keep Audit aligned with the main clinic selector. The audit selector can
+    // still be changed independently afterwards for a different comparison.
+    if ($('auditClinic')?.dataset.ready) {
+      $('auditClinic').value = state.selectedClinic === 'all' ? '' : state.selectedClinic;
+    }
+
+    await loadData();
+  });
   $('search').addEventListener('input', renderDashboard);
   $('exportInventoryCsv').addEventListener('click', exportInventoryCsv);
   $('exportInventoryPdf').addEventListener('click', exportInventoryPdf);
