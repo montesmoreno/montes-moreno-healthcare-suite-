@@ -1946,14 +1946,24 @@
 
     const today = localDateKey(new Date());
 
-    const todayRows = state.auditRows.filter(
+    // Summary cards follow the active audit filters, including clinic, user and
+    // product. Previously they always counted the unfiltered organization data.
+    const todayRows = rows.filter(
       row => localDateKey(row.created_at) === today
     );
+
+    const pendingTransfers = state.transfers.filter(transfer => {
+      if (transfer.status !== 'pending') return false;
+      if (clinicId && transfer.from_clinic_id !== clinicId && transfer.to_clinic_id !== clinicId) return false;
+      if (userId && transfer.created_by !== userId) return false;
+      if (productId && transfer.product_id !== productId) return false;
+      return true;
+    });
 
     $('auditTodayCount').textContent = todayRows.length;
     $('auditTodayEntries').textContent = todayRows.filter(row => row.movement_type === 'entrada').length;
     $('auditTodayExits').textContent = todayRows.filter(row => row.movement_type === 'salida').length;
-    $('auditPendingTransfers').textContent = state.transfers.filter(t => t.status === 'pending').length;
+    $('auditPendingTransfers').textContent = pendingTransfers.length;
   }
 
   function clearAuditFilters() {
