@@ -1784,16 +1784,45 @@
     $('saveConsumptionBtn').textContent = 'Guardando...';
 
     try {
-      const { data, error } = await sb.rpc('consume_inventory_stock', {
-        p_clinic_id: clinicId,
-        p_product_id: productId,
-        p_quantity: quantity,
-        p_reason: $('consumptionReason').value,
-        p_notes: $('consumptionNotes').value.trim() || null
-      });
-      if (error) throw error;
+      // Consume the available lots in FEFO order using the inventory RPC that is
+      // part of the deployed schema. Keeping this client-side avoids depending on
+      // a separate consume_inventory_stock database function that may not exist.
+      const lots = getConsumptionLots(clinicId, productId);
+      const notes = $('consumptionNotes').value.trim();
+      const reason = [
+        $('consumptionReason').value,
+        notes ? `Observaciones: ${notes}` : ''
+      ].filter(Boolean).join(' — ');
+      const usedLots = [];
+      let remaining = quantity;
 
-      const result = Array.isArray(data) ? data[0] : data;
+      for (const lot of lots) {
+        if (remaining <= 0) break;
+
+        const lotQuantity = Math.min(remaining, Number(lot.quantity));
+        const { error } = await sb.rpc('record_inventory_movement', {
+          p_clinic_id: clinicId,
+          p_product_id: productId,
+          p_lot_id: lot.id,
+          p_type: 'salida',
+          p_quantity: lotQuantity,
+          p_reason: reason
+        });
+        if (error) throw error;
+
+        usedLots.push(`${lot.lot_number || 'sin lote'}: ${formatQty(lotQuantity)}`);
+        remaining -= lotQuantity;
+      }
+
+      if (remaining > 0) {
+        throw new Error('No hay suficiente stock disponible en los lotes de este producto.');
+      }
+
+      const result = {
+        previous_quantity: Number(stock.quantity),
+        resulting_quantity: Number(stock.quantity) - quantity,
+        lots_used: usedLots.join(', ')
+      };
       $('consumptionSuccessCard').hidden = false;
       const usedLotText = result?.lots_used || '';
       const usedLotsDetailed = usedLotText
