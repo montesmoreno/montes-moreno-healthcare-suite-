@@ -3158,7 +3158,8 @@ exportButton.addEventListener(
         "Clinic",
         "Hours",
         "Hourly Rate",
-        "Gross Pay"
+        "Gross Pay",
+        "Employee Notes"
       ]
     ];
 
@@ -3179,14 +3180,33 @@ exportButton.addEventListener(
 
         records.forEach((record) => {
           const clinic = record.workClinic || "Unassigned";
-          const current = grouped.get(clinic) || { hours: 0, gross: 0 };
+          const current = grouped.get(clinic) || {
+            hours: 0,
+            gross: 0,
+            employeeNotes: []
+          };
           current.hours += Number(record.hoursWorked || 0);
           current.gross += Number(record.grossPay || 0);
+
+          const employeeNote = String(record.employeeNote || "").trim();
+
+          if (employeeNote) {
+            const noteDate = record.workDate
+              ? `${record.workDate}: `
+              : "";
+
+            current.employeeNotes.push(`${noteDate}${employeeNote}`);
+          }
+
           grouped.set(clinic, current);
         });
 
         if (grouped.size === 0) {
-          grouped.set("Unassigned", { hours: 0, gross: 0 });
+          grouped.set("Unassigned", {
+            hours: 0,
+            gross: 0,
+            employeeNotes: []
+          });
         }
 
         grouped.forEach((totals, clinic) => {
@@ -3196,7 +3216,8 @@ exportButton.addEventListener(
             clinic,
             formatNumber(Math.round(totals.hours * 100) / 100),
             formatCurrency(employee.hourlyRate),
-            formatCurrency(Math.round(totals.gross * 100) / 100)
+            formatCurrency(Math.round(totals.gross * 100) / 100),
+            totals.employeeNotes.join("\n")
           ]);
         });
       }
