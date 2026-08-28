@@ -1784,16 +1784,45 @@
     $('saveConsumptionBtn').textContent = 'Guardando...';
 
     try {
-      const { data, error } = await sb.rpc('consume_inventory_stock', {
-        p_clinic_id: clinicId,
-        p_product_id: productId,
-        p_quantity: quantity,
-        p_reason: $('consumptionReason').value,
-        p_notes: $('consumptionNotes').value.trim() || null
-      });
-      if (error) throw error;
+      // Consume the available lots in FEFO order using the inventory RPC that is
+      // part of the deployed schema. Keeping this client-side avoids depending on
+      // a separate consume_inventory_stock database function that may not exist.
+      const lots = getConsumptionLots(clinicId, productId);
+      const notes = $('consumptionNotes').value.trim();
+      const reason = [
+        $('consumptionReason').value,
+        notes ? `Observaciones: ${notes}` : ''
+      ].filter(Boolean).join(' — ');
+      const usedLots = [];
+      let remaining = quantity;
 
-      const result = Array.isArray(data) ? data[0] : data;
+      for (const lot of lots) {
+        if (remaining <= 0) break;
+
+        const lotQuantity = Math.min(remaining, Number(lot.quantity));
+        const { error } = await sb.rpc('record_inventory_movement', {
+          p_clinic_id: clinicId,
+          p_product_id: productId,
+          p_lot_id: lot.id,
+          p_type: 'salida',
+          p_quantity: lotQuantity,
+          p_reason: reason
+        });
+        if (error) throw error;
+
+        usedLots.push(`${lot.lot_number || 'sin lote'}: ${formatQty(lotQuantity)}`);
+        remaining -= lotQuantity;
+      }
+
+      if (remaining > 0) {
+        throw new Error('No hay suficiente stock disponible en los lotes de este producto.');
+      }
+
+      const result = {
+        previous_quantity: Number(stock.quantity),
+        resulting_quantity: Number(stock.quantity) - quantity,
+        lots_used: usedLots.join(', ')
+      };
       $('consumptionSuccessCard').hidden = false;
       const usedLotText = result?.lots_used || '';
       const usedLotsDetailed = usedLotText
@@ -1856,6 +1885,9 @@
           .join('');
 
       $('auditClinic').dataset.ready = 'true';
+      $('auditClinic').value = state.selectedClinic && state.selectedClinic !== 'all'
+        ? state.selectedClinic
+        : '';
     }
 
     const clinicId = $('auditClinic').value;
@@ -1917,14 +1949,24 @@
 
     const today = localDateKey(new Date());
 
-    const todayRows = state.auditRows.filter(
+    // Summary cards follow the active audit filters, including clinic, user and
+    // product. Previously they always counted the unfiltered organization data.
+    const todayRows = rows.filter(
       row => localDateKey(row.created_at) === today
     );
+
+    const pendingTransfers = state.transfers.filter(transfer => {
+      if (transfer.status !== 'pending') return false;
+      if (clinicId && transfer.from_clinic_id !== clinicId && transfer.to_clinic_id !== clinicId) return false;
+      if (userId && transfer.created_by !== userId) return false;
+      if (productId && transfer.product_id !== productId) return false;
+      return true;
+    });
 
     $('auditTodayCount').textContent = todayRows.length;
     $('auditTodayEntries').textContent = todayRows.filter(row => row.movement_type === 'entrada').length;
     $('auditTodayExits').textContent = todayRows.filter(row => row.movement_type === 'salida').length;
-    $('auditPendingTransfers').textContent = state.transfers.filter(t => t.status === 'pending').length;
+    $('auditPendingTransfers').textContent = pendingTransfers.length;
   }
 
   function clearAuditFilters() {
@@ -2562,7 +2604,17 @@ $('receivingClinic').value = activeClinicId();
   $('addLocationBtn').addEventListener('click', () => $('addLocationDialog').showModal());
   $('cancelLocationBtn').addEventListener('click', () => $('addLocationDialog').close());
   $('addLocationForm').addEventListener('submit', addLocation);
-  $('clinicSelector').addEventListener('change', async (e) => { state.selectedClinic = e.target.value; await loadData(); });
+  $('clinicSelector').addEventListener('change', async (event) => {
+    state.selectedClinic = event.target.value;
+
+    // Keep Audit aligned with the main clinic selector. The audit selector can
+    // still be changed independently afterwards for a different comparison.
+    if ($('auditClinic')?.dataset.ready) {
+      $('auditClinic').value = state.selectedClinic === 'all' ? '' : state.selectedClinic;
+    }
+
+    await loadData();
+  });
   $('search').addEventListener('input', renderDashboard);
   $('exportInventoryCsv').addEventListener('click', exportInventoryCsv);
   $('exportInventoryPdf').addEventListener('click', exportInventoryPdf);
