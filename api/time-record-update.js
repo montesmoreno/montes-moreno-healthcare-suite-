@@ -19,7 +19,7 @@ export default async function handler(req,res){
       const hours=hoursBetween(start,end);
       const gross=Math.round(hours*snapshotRate*100)/100;
       const period=payrollDates(b.workDate);
-      const{data,error}=await db().from("time_records").insert({organization_id:employee.organization_id,employee_record_id:employee.id,clinic_id:clinic.id,employee_id:employee.employee_id,employee_name:snapshotName,work_date:b.workDate,clock_in:start.toISOString(),clock_out:end.toISOString(),hours_worked:hours,hourly_rate_snapshot:snapshotRate,gross_pay:gross,status:"clocked_out",notes:`[MANUAL ENTRY] ${String(b.notes).trim()}`,pay_period_start:period.start,pay_period_end:period.end,pay_date:period.payDate,source_system:"supabase"}).select("*,clinic:clinics(name)").single();
+      const{data,error}=await db().from("time_records").insert({organization_id:employee.organization_id,employee_record_id:employee.id,clinic_id:clinic.id,employee_id:employee.employee_id,employee_name:snapshotName,work_date:b.workDate,actual_clock_in:start.toISOString(),clock_in:start.toISOString(),clock_out:end.toISOString(),hours_worked:hours,hourly_rate_snapshot:snapshotRate,gross_pay:gross,status:"clocked_out",notes:`[MANUAL ENTRY] ${String(b.notes).trim()}`,pay_period_start:period.start,pay_period_end:period.end,pay_date:period.payDate,source_system:"supabase"}).select("*,clinic:clinics(name)").single();
       if(error?.code==="23505")return json(res,409,{error:"A time record already exists for this employee on this date."});
       if(error)throw error;
       return json(res,200,{success:true,record:mapRecord(data)});

@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { createClient } from "@supabase/supabase-js";
+import { payableClockIn } from "./_payable-clock.js";
 
 export const CLINICS = ["Goliad", "San Pedro", "West Texas", "Odessa", "Rundberg", "Walzem"];
 
@@ -60,6 +61,8 @@ export function centralDate() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 
+export { payableClockIn };
+
 export function hoursBetween(start, end) {
   return Math.round(((new Date(end) - new Date(start)) / 3600000) * 100) / 100;
 }
@@ -67,7 +70,7 @@ export function hoursBetween(start, end) {
 export function mapRecord(row) {
   return {
     id: row.id, pageId: row.id, employeeId: String(row.employee_id), employeeName: row.employee_name,
-    workDate: row.work_date, clockIn: row.clock_in, clockOut: row.clock_out,
+    workDate: row.work_date, actualClockIn: row.actual_clock_in || row.clock_in, clockIn: row.clock_in, clockOut: row.clock_out,
     hoursWorked: row.hours_worked == null ? null : Number(row.hours_worked),
     hourlyRate: Number(row.hourly_rate_snapshot || 0), grossPay: row.gross_pay == null ? null : Number(row.gross_pay),
     status: row.status, notes: row.notes || "", employeeNote: row.employee_note || "", payPeriodStart: row.pay_period_start,
