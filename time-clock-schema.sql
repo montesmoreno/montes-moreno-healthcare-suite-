@@ -27,6 +27,7 @@ create table if not exists public.time_records (
   employee_id text not null,
   employee_name text not null,
   work_date date not null,
+  actual_clock_in timestamptz not null,
   clock_in timestamptz not null,
   clock_out timestamptz,
   hours_worked numeric(8,2),
