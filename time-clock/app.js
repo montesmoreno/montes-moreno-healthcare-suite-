@@ -44,6 +44,7 @@ function render() {
     $("statusBadge").textContent = "Clocked Out";
     $("clockInButton").disabled = false;
     $("clockOutButton").disabled = true;
+    $("summaryArrival").textContent = "—";
     $("summaryIn").textContent = "—";
     $("summaryOut").textContent = "—";
     $("summaryHours").textContent = "0.00";
@@ -53,15 +54,17 @@ function render() {
     $("statusBadge").textContent = "Clocked In";
     $("clockInButton").disabled = true;
     $("clockOutButton").disabled = false;
+    $("summaryArrival").textContent = formatTime(r.actualClockIn);
     $("summaryIn").textContent = formatTime(r.clockIn);
     $("summaryOut").textContent = "—";
     $("summaryHours").textContent = "In progress";
-    $("lastAction").textContent = `Clocked in at ${formatTime(r.clockIn)}`;
+    $("lastAction").textContent = `Arrived at ${formatTime(r.actualClockIn)}. Paid time starts at ${formatTime(r.clockIn)}.`;
   } else {
     $("statusBadge").className = "badge out";
     $("statusBadge").textContent = "Clocked Out";
     $("clockInButton").disabled = true;
     $("clockOutButton").disabled = true;
+    $("summaryArrival").textContent = formatTime(r.actualClockIn);
     $("summaryIn").textContent = formatTime(r.clockIn);
     $("summaryOut").textContent = formatTime(r.clockOut);
     $("summaryHours").textContent = Number(r.hoursWorked || 0).toFixed(2);
@@ -78,8 +81,8 @@ function render() {
   }
 
   $("recordsBody").innerHTML = state.records.length
-    ? state.records.map(r => `<tr><td>${formatDate(r.workDate)}</td><td>${escapeHtml(r.workClinic || "Unassigned")}</td><td>${formatTime(r.clockIn)}</td><td>${formatTime(r.clockOut)}</td><td>${r.hoursWorked == null ? "In progress" : Number(r.hoursWorked).toFixed(2)}</td><td>${escapeHtml(r.employeeNote || "—")}</td></tr>`).join("")
-    : '<tr><td colspan="6">No records in this pay period.</td></tr>';
+    ? state.records.map(r => `<tr><td>${formatDate(r.workDate)}</td><td>${escapeHtml(r.workClinic || "Unassigned")}</td><td>${formatTime(r.actualClockIn)}</td><td>${formatTime(r.clockIn)}</td><td>${formatTime(r.clockOut)}</td><td>${r.hoursWorked == null ? "In progress" : Number(r.hoursWorked).toFixed(2)}</td><td>${escapeHtml(r.employeeNote || "—")}</td></tr>`).join("")
+    : '<tr><td colspan="7">No records in this pay period.</td></tr>';
 }
 
 function showPasswordChange(employee) {

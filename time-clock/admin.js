@@ -1784,7 +1784,7 @@ function renderTimeRecordsTable(
     timeRecordsTableBody.innerHTML = `
       <tr>
         <td
-          colspan="8"
+          colspan="10"
           class="empty-state"
         >
           No time records were found for this employee
@@ -1809,6 +1809,12 @@ function renderTimeRecordsTable(
 
       <td>
         ${escapeHtml(record.workClinic || "Unassigned")}
+      </td>
+
+      <td>
+        ${formatDateTime(
+          record.actualClockIn
+        )}
       </td>
 
       <td>
@@ -1913,7 +1919,8 @@ function exportSelectedTimeRecords() {
   const rows = [[
     "Work Date",
     "Clinic",
-    "Clock In",
+    "Actual Arrival",
+    "Paid Start",
     "Clock Out",
     "Hours",
     "Gross Pay",
@@ -1925,6 +1932,7 @@ function exportSelectedTimeRecords() {
     rows.push([
       formatDate(record.workDate),
       record.workClinic || "Unassigned",
+      formatDateTime(record.actualClockIn),
       formatDateTime(record.clockIn),
       formatDateTime(record.clockOut),
       record.hoursWorked ?? "",
@@ -1976,6 +1984,7 @@ function printSelectedTimeRecords() {
         <tr>
           <td>${formatDate(record.workDate)}</td>
           <td>${escapeHtml(record.workClinic || "Unassigned")}</td>
+          <td>${formatDateTime(record.actualClockIn)}</td>
           <td>${formatDateTime(record.clockIn)}</td>
           <td>${formatDateTime(record.clockOut)}</td>
           <td>${record.hoursWorked == null ? "—" : formatNumber(record.hoursWorked)}</td>
@@ -1984,7 +1993,7 @@ function printSelectedTimeRecords() {
           <td>${escapeHtml(record.notes || "—")}</td>
         </tr>
       `).join("")
-    : '<tr><td colspan="8">No time records available.</td></tr>';
+    : '<tr><td colspan="9">No time records available.</td></tr>';
   const printWindow = window.open("", "_blank");
 
   if (!printWindow) {
@@ -2005,7 +2014,7 @@ function printSelectedTimeRecords() {
     </style></head><body>
     <h1>Employee Time Records</h1>
     <p>${escapeHtml(employee.employeeName)} — Employee ID: ${escapeHtml(employee.employeeId)}</p>
-    <table><thead><tr><th>Work Date</th><th>Clinic</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Gross Pay</th><th>Employee Note</th><th>Correction Notes</th></tr></thead>
+    <table><thead><tr><th>Work Date</th><th>Clinic</th><th>Actual Arrival</th><th>Paid Start</th><th>Clock Out</th><th>Hours</th><th>Gross Pay</th><th>Employee Note</th><th>Correction Notes</th></tr></thead>
     <tbody>${tableRows}</tbody></table></body></html>`);
   printWindow.document.close();
   printWindow.addEventListener("load", () => {
