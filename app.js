@@ -2359,7 +2359,7 @@ $('receivingClinic').value = activeClinicId();
         p_clinic_id: clinicId,
         p_product_id: productId,
         p_supplier_id: supplierId,
-        p_quantity: quantity,
+        p_quantity: receivingStockQuantity(product, quantity),
         p_lot_number: $('receivingLot').value.trim() || null,
         p_expiration_date: $('receivingExpiration').value || null,
         p_invoice_number: $('receivingInvoice').value.trim() || null,
