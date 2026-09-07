@@ -2380,7 +2380,7 @@ $('receivingClinic').value = activeClinicId();
             : `${formatQty(quantity)} ${escapeHtml(product.unit)}`
         }</p>
         <p>Proveedor: ${escapeHtml(supplier.name)}</p>
-        <p>Stock: ${formatQty(result?.previous_quantity || 0)} → ${formatQty(result?.resulting_quantity || 0)} ${escapeHtml(product.unit)}</p>
+        <p>La recepción se guardó correctamente. Consulta el saldo actualizado en Inventario.</p>
         ${$('receivingLot').value ? `<p>Lote: ${escapeHtml($('receivingLot').value)}</p>` : ''}
         ${$('receivingExpiration').value ? `<p>Vence: ${escapeHtml($('receivingExpiration').value)}</p>` : ''}
       `;
