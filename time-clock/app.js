@@ -1,18 +1,75 @@
 const $ = (id) => document.getElementById(id);
 const state = { token: sessionStorage.getItem("mmha_token"), employee: null, records: [], current: null, period: null };
 
+const IDLE_LIMIT_MS = 5 * 60 * 1000;
+const ACTIVITY_KEY = "mmha_employee_last_activity";
+let idleTimer;
+let sessionVersion = 0;
+
+function requireActiveSession() {
+  const lastActivity = Number(sessionStorage.getItem(ACTIVITY_KEY));
+  const now = Date.now();
+  if (!state.token || sessionStorage.getItem("mmha_token") !== state.token ||
+      !Number.isFinite(lastActivity) || lastActivity <= 0 ||
+      now < lastActivity || now - lastActivity >= IDLE_LIMIT_MS) {
+    signOut();
+    message($("loginMessage"), "Your session expired. Please sign in again. Your recorded work time has not changed.", "error");
+    return false;
+  }
+  return true;
+}
+
+function scheduleIdleCheck() {
+  clearTimeout(idleTimer);
+  if (!state.token) return;
+  const remaining = IDLE_LIMIT_MS - (Date.now() - Number(sessionStorage.getItem(ACTIVITY_KEY)));
+  idleTimer = setTimeout(() => {
+    if (requireActiveSession()) scheduleIdleCheck();
+  }, Math.max(0, remaining));
+}
+
+function userActivity(event) {
+  if (!event.isTrusted || !state.token) return;
+  // Check the old deadline first: a late click must never revive a session.
+  if (!requireActiveSession()) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+  sessionStorage.setItem(ACTIVITY_KEY, String(Date.now()));
+  scheduleIdleCheck();
+}
+
+for (const type of ["click", "touchstart", "keydown"]) {
+  window.addEventListener(type, userActivity, { capture: true, passive: false });
+}
+function checkOnReturn() {
+  if (state.token && requireActiveSession()) scheduleIdleCheck();
+}
+window.addEventListener("focus", checkOnReturn);
+document.addEventListener("visibilitychange", checkOnReturn);
+
 function message(el, text, type="") {
   el.className = `message ${type}`.trim();
   el.textContent = text;
 }
 
 function authHeaders() {
+  if (!requireActiveSession()) throw new Error("Please sign in again.");
   return { "Content-Type": "application/json", "Authorization": `Bearer ${state.token}` };
 }
 
 async function api(path, options={}) {
+  const authenticated = Boolean(options.headers?.Authorization);
+  const version = sessionVersion;
+  if (authenticated && !requireActiveSession()) throw new Error("Please sign in again.");
   const response = await fetch(path, options);
   const data = await response.json().catch(() => ({}));
+  // A response from a signed-out employee must not restore the dashboard.
+  if (authenticated && (version !== sessionVersion || !requireActiveSession())) {
+    throw new Error("Session ended. Please sign in again.");
+  }
+  if (authenticated && response.status === 401) signOut();
   if (!response.ok) throw new Error(data.error || "Request failed");
   return data;
 }
@@ -97,9 +154,24 @@ function showPasswordChange(employee) {
 }
 
 function signOut() {
+  clearTimeout(idleTimer);
+  sessionVersion += 1;
+  sessionStorage.removeItem(ACTIVITY_KEY);
   sessionStorage.removeItem("mmha_token");
   state.token = null;
   state.employee = null;
+  state.records = [];
+  state.current = null;
+  state.period = null;
+  $("clockInButton").disabled = true;
+  $("clockOutButton").disabled = true;
+  $("employeeNote").value = "";
+  $("newPassword").value = "";
+  $("confirmNewPassword").value = "";
+  $("recordsBody").innerHTML = "";
+  $("clinicOptions").innerHTML = "";
+  $("welcomeName").textContent = "";
+  message($("actionMessage"), "");
   $("employeeId").value = "";
   $("password").value = "";
   $("passwordChangeView").classList.add("hidden");
@@ -133,8 +205,12 @@ $("loginForm").addEventListener("submit", async (event) => {
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({ employeeId:$("employeeId").value.trim(), password:$("password").value })
     });
+    sessionVersion += 1;
     state.token = data.token;
     sessionStorage.setItem("mmha_token", data.token);
+    sessionStorage.setItem(ACTIVITY_KEY, String(Date.now()));
+    $("password").value = "";
+    scheduleIdleCheck();
     if (data.employee?.mustChangePassword) showPasswordChange(data.employee);
     else await loadDashboard();
   } catch (error) {
@@ -234,7 +310,10 @@ $("logoutButton").addEventListener("click", signOut);
 
 tick();
 setInterval(tick, 1000);
-if (state.token) loadDashboard().catch(() => sessionStorage.removeItem("mmha_token"));
+if (state.token && requireActiveSession()) {
+  scheduleIdleCheck();
+  loadDashboard().catch(() => signOut());
+}
 
 window.addEventListener(
   "pageshow",
@@ -248,6 +327,8 @@ window.addEventListener(
       window.location.reload();
       return;
     }
+
+    checkOnReturn();
 
     const savedToken =
       sessionStorage.getItem(
